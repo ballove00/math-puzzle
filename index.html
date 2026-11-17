@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>특수교육 맞춤형 사칙연산 그림 퍼즐 학습지 제작기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+
+        /* A4 용지 기본 규격 (미리보기용) */
+        .a4-page {
+            background: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            margin: 0 auto 24px auto;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 세로형 A4 */
+        .a4-portrait {
+            width: 210mm;
+            height: 297mm;
+            padding: 12mm 14mm;
+        }
+
+        /* 가로형 A4 */
+        .a4-landscape {
+            width: 297mm;
+            height: 210mm;
+            padding: 10mm 14mm;
+        }
+
+        /* 인쇄 전용 스타일 */
+        @media print {
+            body {
+                background: none;
+                margin: 0;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .preview-wrapper {
+                padding: 0 !important;
+                margin: 0 !important;
+                background: none !important;
+                overflow: visible !important;
+                width: 100% !important;
+            }
+            .a4-page {
+                box-shadow: none !important;
+                margin: 0 !important;
+                page-break-after: always;
+                break-after: page;
+            }
+            .a4-page:last-child {
+                page-break-after: auto;
+                break-after: auto;
+            }
+        }
+
+        /* 퍼즐 조각 및 그리드 스타일 */
+        .problem-cell {
+            border: 2px solid #1f2937;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #000000;
+            background-color: #ffffff;
+            position: relative;
+            user-select: none;
+        }
+
+        .puzzle-piece {
+            border: 2.5px dashed #1f2937;
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+            background-color: #fff;
+        }
+
+        /* 정답 숫자 고대비 배지 (6과 9 혼동 방지 밑줄 포함) */
+        .answer-badge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.94);
+            border: 2.5px solid #000000;
+            border-radius: 9999px;
+            min-width: 34px;
+            height: 34px;
+            padding: 0 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #000000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+            z-index: 10;
+        }
+
+        .answer-badge span {
+            text-decoration: underline;
+            text-decoration-thickness: 2.5px;
+            text-underline-offset: 3px;
+            line-height: 1;
+        }
+
+        /* 교사용 정답지 오버레이 */
+        .teacher-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.72);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #000;
+            z-index: 5;
+        }
+    </style>
+    <style id="dynamic-print-style">
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="flex flex-col lg:flex-row min-h-screen">
+
+    <!-- 좌측: 교사용 설정 패널 (인쇄 시 숨김) -->
+    <aside class="no-print w-full lg:w-[420px] bg-white border-r border-gray-200 p-5 overflow-y-auto lg:h-screen sticky top-0 shadow-sm z-20">
+        <div class="flex items-center justify-between border-b pb-3 mb-4">
+            <div>
+                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">특수교육 맞춤형 교구</span>
+                <h1 class="text-xl font-black text-gray-900 mt-1">사칙연산 그림 퍼즐 제작기</h1>
+            </div>
+            <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl shadow flex items-center gap-1.5 transition">
+                <span>🖨️</span> 인쇄하기
+            </button>
+        </div>
+
+        <!-- 1. 학습지 기본 정보 -->
+        <section class="mb-5">
+            <h2 class="text-sm font-bold text-gray-700 mb-2 flex items-center gap-1">1. 학습지 제목 및 정보</h2>
+            <input type="text" id="worksheetTitle" value="재미있는 수학 그림 퍼즐" oninput="renderWorksheet()"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-indigo-500 mb-2">
+            <div class="flex items-center justify-between text-xs text-gray-600">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" id="showStudentInfo" checked onchange="renderWorksheet()" class="rounded text-indigo-600">
+                    <span>이름 / 날짜 기입란 표시</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer font-bold text-emerald-700">
+                    <input type="checkbox" id="teacherMode" onchange="renderWorksheet()" class="rounded text-emerald-600">
+                    <span>교사용 정답지 미리보기</span>
+                </label>
+            </div>
+        </section>
+
+        <!-- 2. 그리드 크기 및 인쇄 레이아웃 -->
+        <section class="mb-5 border-t pt-4">
+            <h2 class="text-sm font-bold text-gray-700 mb-2">2. 퍼즐 그리드 크기 (가로 열 × 세로 행)</h2>
+            <div class="grid grid-cols-5 gap-1.5 mb-2.5">
+                <button onclick="setGrid(3, 3)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="3x3">3×3</button>
+                <button onclick="setGrid(4, 4)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 border-indigo-500 text-indigo-700" data-grid="4x4">4×4</button>
+                <button onclick="setGrid(3, 5)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="3x5">3×5<span class="block text-[10px] text-indigo-600 font-normal">2단추천</span></button>
+                <button onclick="setGrid(5, 5)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="5x5">5×5</button>
+                <button onclick="setGrid(6, 6)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="6x6">6×6</button>
+            </div>
+            <div class="flex items-center gap-2 text-sm mb-3">
+                <span class="text-gray-600 text-xs font-bold">직접 입력:</span>
+                <input type="number" id="gridCols" value="4" min="2" max="8" onchange="onGridManualChange()" class="w-16 border border-gray-300 rounded px-2 py-1 text-center font-bold">
+                <span class="text-gray-500 font-bold">열(가로) ×</span>
+                <input type="number" id="gridRows" value="4" min="2" max="8" onchange="onGridManualChange()" class="w-16 border border-gray-300 rounded px-2 py-1 text-center font-bold">
+                <span class="text-gray-500 font-bold">행(세로)</span>
+            </div>
+
+            <label class="block text-xs font-bold text-gray-700 mb-1">A4 인쇄 배치 방식 (자동 추천 적용됨)</label>
+            <select id="layoutMode" onchange="renderWorksheet()" class="w-full border border-gray-300 rounded-lg px-2.5 py-2 text-xs font-bold bg-gray-50">
+                <option value="1page-vertical">1페이지 상하 2단 분할 (세로 A4 - 정사각/가로형 추천)</option>
+                <option value="1page-horizontal">1페이지 좌우 2단 분할 (가로 A4 - 3×5 등 세로형 추천)</option>
+                <option value="2page-split">2페이지 분리 인쇄 (세로 A4 - 5×5, 6×6 대형 추천)</option>
+            </select>
+        </section>
+
+        <!-- 3. 사칙연산 조건 설정 -->
+        <section class="mb-5 border-t pt-4">
+            <div class="flex items-center justify-between mb-2">
+                <h2 class="text-sm font-bold text-gray-700">3. 사칙연산 문제 설정</h2>
+                <button onclick="regenerateProblems()" class="text-xs bg-gray-800 hover:bg-gray-900 text-white px-2.5 py-1 rounded-md font-bold flex items-center gap-1">
+                    <span>🔄</span> 문제·조각 새로 섞기
+                </button>
+            </div>
+
+            <div class="grid grid-cols-4 gap-1.5 mb-3">
+                <label class="flex items-center justify-center gap-1 border rounded-lg py-1.5 text-xs font-bold cursor-pointer bg-gray-50">
+                    <input type="checkbox" class="op-check" value="+" checked onchange="regenerateProblems()"> 덧셈(+)
+                </label>
+                <label class="flex items-center justify-center gap-1 border rounded-lg py-1.5 text-xs font-bold cursor-pointer bg-gray-50">
+                    <input type="checkbox" class="op-check" value="-" checked onchange="regenerateProblems()"> 뺄셈(-)
+                </label>
+                <label class="flex items-center justify-center gap-1 border rounded-lg py-1.5 text-xs font-bold cursor-pointer bg-gray-50">
+                    <input type="checkbox" class="op-check" value="*" onchange="regenerateProblems()"> 곱셈(×)
+                </label>
+                <label class="flex items-center justify-center gap-1 border rounded-lg py-1.5 text-xs font-bold cursor-pointer bg-gray-50">
+                    <input type="checkbox" class="op-check" value="/" onchange="regenerateProblems()"> 나눗셈(÷)
+                </label>
+            </div>
+
+            <div class="flex items-center gap-2 text-xs mb-2">
+                <span class="font-bold text-gray-600">숫자 범위:</span>
+                <input type="number" id="minNum" value="1" min="0" max="500" onchange="regenerateProblems()" class="w-16 border border-gray-300 rounded px-2 py-1 text-center font-bold">
+                <span>~</span>
+                <input type="number" id="maxNum" value="20" min="2" max="999" onchange="regenerateProblems()" class="w-16 border border-gray-300 rounded px-2 py-1 text-center font-bold">
+                <select onchange="applyRangePreset(this.value)" class="border border-gray-300 rounded px-1.5 py-1 text-xs bg-white">
+                    <option value="">빠른 선택</option>
+                    <option value="1,9">1~9 (기초)</option>
+                    <option value="1,20">1~20</option>
+                    <option value="10,50">10~50</option>
+                    <option value="10,99">10~99</option>
+                </select>
+            </div>
+
+            <div id="duplicateWarning" class="hidden text-xs bg-amber-50 border border-amber-300 text-amber-800 px-2.5 py-1.5 rounded-lg mt-2">
+                ⚠️ 선택한 숫자 범위가 그리드 칸 수보다 좁아 일부 같은 정답이 포함됩니다. (같은 답 조각은 어디에 붙여도 그림이 완성됩니다)
+            </div>
+        </section>
+
+        <!-- 4. 퍼즐 그림 선택 (업로드 / AI 생성 / 기본 샘플) -->
+        <section class="mb-4 border-t pt-4">
+            <h2 class="text-sm font-bold text-gray-700 mb-2">4. 퍼즐 그림 선택</h2>
+
+            <!-- 탭 버튼 -->
+            <div class="flex border-b border-gray-200 mb-3 text-xs font-bold">
+                <button id="tabBtnUpload" onclick="switchImageTab('upload')" class="flex-1 py-2 border-b-2 border-indigo-600 text-indigo-600">📁 직접 업로드</button>
+                <button id="tabBtnAI" onclick="switchImageTab('ai')" class="flex-1 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">✨ AI 그림 생성</button>
+            </div>
+
+            <!-- 탭 1: 직접 업로드 & 픽셀 가이드 -->
+            <div id="tabPanelUpload">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-2.5 mb-2.5 text-xs text-blue-900">
+                    <p class="font-bold">📐 현재 그리드(<span id="guideGridText">4×4</span>) 권장 이미지 규격</p>
+                    <ul class="list-disc list-inside mt-1 space-y-0.5 text-[11px]">
+                        <li><strong>권장 비율:</strong> 가로:세로 <strong id="guideRatioText">1:1 (정사각형)</strong> 비율</li>
+                        <li><strong>권장 해상도:</strong> 최소 <strong>1200 × 1200 px</strong> 이상 (A4 고화질 인쇄 기준)</li>
+                        <li>비율이 다른 사진은 찌그러지지 않게 중앙 기준으로 자동 맞춤됩니다.</li>
+                    </ul>
+                </div>
+
+                <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition">
+                    <span class="text-xs font-bold text-gray-700">클릭하여 컴퓨터/태블릿에서 그림 선택</span>
+                    <span class="text-[11px] text-gray-400 mt-0.5">JPG, PNG, WEBP 지원</span>
+                    <input type="file" id="imageUploadInput" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
+                </label>
+
+                <div id="imageQualityFeedback" class="mt-2 text-xs hidden"></div>
+            </div>
+
+            <!-- 탭 2: AI 그림 생성 API 연동 -->
+            <div id="tabPanelAI" class="hidden">
+                <div class="mb-2">
+                    <label class="block text-[11px] font-bold text-gray-600 mb-1">OpenAI API Key (선택사항 - 미입력 시 테스트용 고대비 그림 생성)</label>
+                    <input type="password" id="aiApiKey" placeholder="sk-..." class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs">
+                </div>
+                <div class="mb-2">
+                    <label class="block text-[11px] font-bold text-gray-600 mb-1">어떤 그림을 만들까요? (학생이 좋아하는 주제 입력)</label>
+                    <div class="flex gap-1.5">
+                        <input type="text" id="aiPromptInput" placeholder="예: 사과를 먹는 웃는 공룡" class="flex-1 border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs font-bold">
+                        <button onclick="generateAIImage()" id="aiGenBtn" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap">
+                            ✨ 생성
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-gray-500 mt-1">* 장애학생이 인지하기 쉬운 굵은 테두리·고대비 일러스트 스타일이 자동 적용됩니다.</p>
+                </div>
+            </div>
+
+            <!-- 기본 고대비 샘플 일러스트 선택 -->
+            <div class="mt-3">
+                <span class="block text-[11px] font-bold text-gray-500 mb-1.5">기본 제공 고대비 일러스트 샘플:</span>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="useBuiltInSample('apple')" class="border rounded-lg py-1.5 text-xs font-bold hover:bg-red-50 border-gray-200">🍎 빨간 사과</button>
+                    <button onclick="useBuiltInSample('rocket')" class="border rounded-lg py-1.5 text-xs font-bold hover:bg-blue-50 border-gray-200">🚀 우주 로켓</button>
+                    <button onclick="useBuiltInSample('star')" class="border rounded-lg py-1.5 text-xs font-bold hover:bg-yellow-50 border-gray-200">⭐ 웃는 별님</button>
+                </div>
+            </div>
+        </section>
+    </aside>
+
+    <!-- 우측: A4 학습지 실시간 미리보기 영역 -->
+    <main class="preview-wrapper flex-1 p-4 lg:p-8 overflow-y-auto flex flex-col items-center">
+        <div id="worksheetContainer" class="w-full flex flex-col items-center"></div>
+    </main>
+
+    <script>
+        // 전역 상태 관리
+        let state = {
+            cols: 4,
+            rows: 4,
+            problems: [], // { expr, answer, correctIndex }
+            shuffledPieces: [], // { correctIndex, answer }
+            imageDataUrl: null,
+            imageNaturalWidth: 1200,
+            imageNaturalHeight: 1200
+        };
+
+        // 초기화
+        window.onload = () => {
+            useBuiltInSample('rocket');
+            regenerateProblems();
+        };
+
+        // 탭 전환
+        function switchImageTab(tab) {
+            const btnUp = document.getElementById('tabBtnUpload');
+            const btnAI = document.getElementById('tabBtnAI');
+            const panelUp = document.getElementById('tabPanelUpload');
+            const panelAI = document.getElementById('tabPanelAI');
+
+            if (tab === 'upload') {
+                btnUp.className = 'flex-1 py-2 border-b-2 border-indigo-600 text-indigo-600';
+                btnAI.className = 'flex-1 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700';
+                panelUp.classList.remove('hidden');
+                panelAI.classList.add('hidden');
+            } else {
+                btnAI.className = 'flex-1 py-2 border-b-2 border-purple-600 text-purple-600';
+                btnUp.className = 'flex-1 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700';
+                panelAI.classList.remove('hidden');
+                panelUp.classList.add('hidden');
+            }
+        }
+
+        // 그리드 프리셋 선택
+        function setGrid(cols, rows) {
+            document.getElementById('gridCols').value = cols;
+            document.getElementById('gridRows').value = rows;
+            
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                if (btn.dataset.grid === `${cols}x${rows}`) {
+                    btn.classList.add('bg-indigo-50', 'border-indigo-500', 'text-indigo-700');
+                } else {
+                    btn.classList.remove('bg-indigo-50', 'border-indigo-500', 'text-indigo-700');
+                }
+            });
+
+            onGridManualChange();
+        }
+
+        // 그리드 변경 시 레이아웃 및 픽셀 가이드 자동 추천
+        function onGridManualChange() {
+            let cols = parseInt(document.getElementById('gridCols').value) || 4;
+            let rows = parseInt(document.getElementById('gridRows').value) || 4;
+            cols = Math.max(2, Math.min(8, cols));
+            rows = Math.max(2, Math.min(8, rows));
+            state.cols = cols;
+            state.rows = rows;
+
+            // 픽셀 비율 가이드 업데이트
+            const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+            const divisor = gcd(cols, rows);
+            document.getElementById('guideGridText').innerText = `${cols}×${rows}`;
+            document.getElementById('guideRatioText').innerText = `${cols/divisor}:${rows/divisor} (${cols === rows ? '정사각형' : (cols < rows ? '세로형' : '가로형')})`;
+
+            // 스마트 레이아웃 자동 추천
+            const layoutSelect = document.getElementById('layoutMode');
+            const total = cols * rows;
+            if (total >= 25) {
+                layoutSelect.value = '2page-split';
+            } else if (rows > cols) {
+                // 예: 3x5, 4x5 등 세로로 긴 그리드는 가로 A4 좌우 2단 추천
+                layoutSelect.value = '1page-horizontal';
+            } else {
+                layoutSelect.value = '1page-vertical';
+            }
+
+            regenerateProblems();
+        }
+
+        // 숫자 범위 프리셋
+        function applyRangePreset(val) {
+            if (!val) return;
+            const [min, max] = val.split(',');
+            document.getElementById('minNum').value = min;
+            document.getElementById('maxNum').value = max;
+            regenerateProblems();
+        }
+
+        // 사칙연산 문제 생성기 (중복 정답 최소화 로직 포함)
+        function regenerateProblems() {
+            const totalCells = state.cols * state.rows;
+            const ops = Array.from(document.querySelectorAll('.op-check:checked')).map(cb => cb.value);
+            if (ops.length === 0) {
+                ops.push('+');
+                document.querySelector('.op-check[value="+"]').checked = true;
+            }
+
+            let min = parseInt(document.getElementById('minNum').value) || 1;
+            let max = parseInt(document.getElementById('maxNum').value) || 20;
+            if (min > max) [min, max] = [max, min];
+
+            const problems = [];
+            const usedAnswers = new Set();
+            let duplicateOccurred = false;
+
+            for (let i = 0; i < totalCells; i++) {
+                let expr = '';
+                let answer = 0;
+                let attempts = 0;
+
+                while (attempts < 150) {
+                    const op = ops[Math.floor(Math.random() * ops.length)];
+                    let a = Math.floor(Math.random() * (max - min + 1)) + min;
+                    let b = Math.floor(Math.random() * (max - min + 1)) + min;
+
+                    if (op === '+') {
+                        expr = `${a} + ${b}`;
+                        answer = a + b;
+                    } else if (op === '-') {
+                        if (a < b) [a, b] = [b, a];
+                        expr = `${a} - ${b}`;
+                        answer = a - b;
+                    } else if (op === '*') {
+                        // 곱셈은 숫자가 너무 커지지 않게 적절히 제한
+                        const mulMax = Math.min(max, 19);
+                        a = Math.floor(Math.random() * (mulMax - Math.max(1, min) + 1)) + Math.max(1, min);
+                        b = Math.floor(Math.random() * 9) + 1;
+                        expr = `${a} × ${b}`;
+                        answer = a * b;
+                    } else if (op === '/') {
+                        const divMax = Math.min(max, 15);
+                        b = Math.floor(Math.random() * 8) + 2; // 2~9로 나누기
+                        answer = Math.floor(Math.random() * (divMax - Math.max(1, min) + 1)) + Math.max(1, min);
+                        a = b * answer;
+                        expr = `${a} ÷ ${b}`;
+                    }
+
+                    if (!usedAnswers.has(answer)) {
+                        usedAnswers.add(answer);
+                        break;
+                    }
+                    attempts++;
+                }
+
+                if (attempts >= 150) {
+                    duplicateOccurred = true;
+                }
+
+                problems.push({
+                    expr,
+                    answer,
+                    correctIndex: i
+                });
+            }
+
+            const warnEl = document.getElementById('duplicateWarning');
+            if (duplicateOccurred) warnEl.classList.remove('hidden');
+            else warnEl.classList.add('hidden');
+
+            state.problems = problems;
+
+            // 퍼즐 조각 순서 무작위 셔플
+            const pieces = problems.map(p => ({ correctIndex: p.correctIndex, answer: p.answer }));
+            for (let i = pieces.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pieces[i], pieces[j]] = [pieces[j], pieces[i]];
+            }
+            // 원래 순서와 완전히 같다면 한 번 더 스왑
+            if (pieces.length > 1 && pieces.every((p, idx) => p.correctIndex === idx)) {
+                [pieces[0], pieces[1]] = [pieces[1], pieces[0]];
+            }
+            state.shuffledPieces = pieces;
+
+            renderWorksheet();
+        }
+
+        // 로컬 이미지 업로드 및 해상도 검증
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    state.imageDataUrl = e.target.result;
+                    state.imageNaturalWidth = img.naturalWidth;
+                    state.imageNaturalHeight = img.naturalHeight;
+
+                    const feedback = document.getElementById('imageQualityFeedback');
+                    feedback.classList.remove('hidden');
+
+                    const minDim = Math.min(img.naturalWidth, img.naturalHeight);
+                    if (minDim < 800) {
+                        feedback.className = 'mt-2 text-xs bg-amber-50 border border-amber-300 text-amber-800 p-2 rounded-lg font-medium';
+                        feedback.innerHTML = `⚠️ <strong>해상도 주의 (${img.naturalWidth}×${img.naturalHeight}px):</strong> A4 인쇄 시 그림이 다소 흐릿할 수 있습니다. (1200px 이상 권장)`;
+                    } else {
+                        feedback.className = 'mt-2 text-xs bg-emerald-50 border border-emerald-300 text-emerald-800 p-2 rounded-lg font-medium';
+                        feedback.innerHTML = `✅ <strong>고화질 적합 (${img.naturalWidth}×${img.naturalHeight}px):</strong> 선명한 A4 인쇄에 적합한 해상도입니다.`;
+                    }
+
+                    renderWorksheet();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // AI 이미지 생성 (OpenAI DALL-E 3 연동 + 키 미입력 시 고대비 커스텀 캔버스 폴백)
+        async function generateAIImage() {
+            const promptText = document.getElementById('aiPromptInput').value.trim();
+            if (!promptText) {
+                alert('만들고 싶은 그림의 주제를 입력해 주세요! (예: 웃고 있는 기차)');
+                return;
+            }
+
+            const apiKey = document.getElementById('aiApiKey').value.trim();
+            const btn = document.getElementById('aiGenBtn');
+            btn.disabled = true;
+            btn.innerText = '생성 중...';
+
+            // 특수교육 최적화 프롬프트 래퍼
+            const enhancedPrompt = `${promptText}, flat vector illustration for children, thick black outlines, bright distinct solid colors, simple clean white background, high contrast, educational puzzle art, no text`;
+
+            try {
+                if (apiKey) {
+                    const response = await fetch('https://api.openai.com/v1/images/generations', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: 'dall-e-3',
+                            prompt: enhancedPrompt,
+                            n: 1,
+                            size: '1024x1024',
+                            response_format: 'b64_json'
+                        })
+                    });
+
+                    if (!response.ok) throw new Error('API 호출 오류');
+                    const data = await response.json();
+                    state.imageDataUrl = `data:image/png;base64,${data.data[0].b64_json}`;
+                    state.imageNaturalWidth = 1024;
+                    state.imageNaturalHeight = 1024;
+                    renderWorksheet();
+                } else {
+                    // API 키 없을 시 고해상도 샘플 일러스트 생성 (시뮬레이션)
+                    await new Promise(r => setTimeout(r, 600));
+                    generateCanvasIllustration(promptText);
+                }
+            } catch (err) {
+                alert('이미지 생성 중 오류가 발생했습니다. API 키를 확인하거나 기본 일러스트를 사용해 주세요.');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '✨ 생성';
+            }
+        }
+
+        // 기본 고대비 일러스트 생성기 (Canvas API 1200x1200 고해상도 출력)
+        function useBuiltInSample(type) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1200;
+            canvas.height = 1200;
+            const ctx = canvas.getContext('2d');
+
+            // 배경
+            ctx.fillStyle = '#E0F2FE';
+            ctx.fillRect(0, 0, 1200, 1200);
+
+            // 테두리 프레임 (조각 위치 힌트 역할)
+            ctx.strokeStyle = '#0284C7';
+            ctx.lineWidth = 28;
+            ctx.strokeRect(14, 14, 1172, 1172);
+
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            if (type === 'apple') {
+                ctx.fillStyle = '#FEF3C7';
+                ctx.fillRect(0, 0, 1200, 1200);
+                // 잎사귀
+                ctx.fillStyle = '#16A34A';
+                ctx.beginPath();
+                ctx.ellipse(680, 230, 110, 55, -0.4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.lineWidth = 16;
+                ctx.strokeStyle = '#111827';
+                ctx.stroke();
+
+                // 꼭지
+                ctx.beginPath();
+                ctx.moveTo(600, 320);
+                ctx.quadraticCurveTo(590, 200, 630, 150);
+                ctx.lineWidth = 22;
+                ctx.stroke();
+
+                // 사과 몸통
+                ctx.fillStyle = '#EF4444';
+                ctx.beginPath();
+                ctx.moveTo(600, 340);
+                ctx.bezierCurveTo(350, 240, 220, 520, 320, 820);
+                ctx.bezierCurveTo(400, 1020, 560, 1020, 600, 960);
+                ctx.bezierCurveTo(640, 1020, 800, 1020, 880, 820);
+                ctx.bezierCurveTo(980, 520, 850, 240, 600, 340);
+                ctx.fill();
+                ctx.lineWidth = 18;
+                ctx.stroke();
+
+                // 웃는 얼굴
+                ctx.fillStyle = '#111827';
+                ctx.beginPath();
+                ctx.arc(490, 600, 28, 0, Math.PI * 2);
+                ctx.arc(710, 600, 28, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(600, 660, 80, 0.2, Math.PI - 0.2);
+                ctx.lineWidth = 18;
+                ctx.stroke();
+
+            } else if (type === 'rocket') {
+                ctx.fillStyle = '#1E1B4B';
+                ctx.fillRect(0, 0, 1200, 1200);
+
+                // 배경 별들
+                ctx.fillStyle = '#FACC15';
+                [[200,220,35],[980,260,40],[240,920,30],[960,880,35],[580,140,25]].forEach(([x,y,r]) => {
+                    ctx.beginPath();
+                    ctx.arc(x, y, r, 0, Math.PI*2);
+                    ctx.fill();
+                });
+
+                // 불꽃
+                ctx.fillStyle = '#F97316';
+                ctx.beginPath();
+                ctx.moveTo(480, 860);
+                ctx.lineTo(600, 1080);
+                ctx.lineTo(720, 860);
+                ctx.closePath();
+                ctx.fill();
+                ctx.lineWidth = 16;
+                ctx.strokeStyle = '#FDE047';
+                ctx.stroke();
+
+                // 날개
+                ctx.fillStyle = '#EF4444';
+                ctx.beginPath();
+                ctx.moveTo(430, 620);
+                ctx.lineTo(280, 840);
+                ctx.lineTo(450, 820);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(770, 620);
+                ctx.lineTo(920, 840);
+                ctx.lineTo(750, 820);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // 로켓 몸체
+                ctx.fillStyle = '#F8FAFC';
+                ctx.beginPath();
+                ctx.moveTo(600, 200);
+                ctx.quadraticCurveTo(800, 420, 760, 860);
+                ctx.lineTo(440, 860);
+                ctx.quadraticCurveTo(400, 420, 600, 200);
+                ctx.fill();
+                ctx.lineWidth = 18;
+                ctx.strokeStyle = '#38BDF8';
+                ctx.stroke();
+
+                // 창문
+                ctx.fillStyle = '#38BDF8';
+                ctx.beginPath();
+                ctx.arc(600, 530, 105, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.lineWidth = 18;
+                ctx.strokeStyle = '#0F172A';
+                ctx.stroke();
+
+            } else {
+                // 웃는 별님
+                ctx.fillStyle = '#ECFDF5';
+                ctx.fillRect(0, 0, 1200, 1200);
+
+                ctx.fillStyle = '#FACC15';
+                ctx.beginPath();
+                const cx = 600, cy = 600, spikes = 5, outerRadius = 460, innerRadius = 210;
+                let rot = Math.PI / 2 * 3;
+                let step = Math.PI / spikes;
+                ctx.moveTo(cx, cy - outerRadius);
+                for (let i = 0; i < spikes; i++) {
+                    ctx.lineTo(cx + Math.cos(rot) * outerRadius, cy + Math.sin(rot) * outerRadius);
+                    rot += step;
+                    ctx.lineTo(cx + Math.cos(rot) * innerRadius, cy + Math.sin(rot) * innerRadius);
+                    rot += step;
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.lineWidth = 20;
+                ctx.strokeStyle = '#111827';
+                ctx.stroke();
+
+                // 눈 & 미소
+                ctx.fillStyle = '#111827';
+                ctx.beginPath();
+                ctx.arc(510, 560, 26, 0, Math.PI * 2);
+                ctx.arc(690, 560, 26, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(600, 620, 75, 0.2, Math.PI - 0.2);
+                ctx.lineWidth = 18;
+                ctx.stroke();
+            }
+
+            state.imageDataUrl = canvas.toDataURL('image/png');
+            state.imageNaturalWidth = 1200;
+            state.imageNaturalHeight = 1200;
+            renderWorksheet();
+        }
+
+        function generateCanvasIllustration(label) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1200;
+            canvas.height = 1200;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#FEF9C3';
+            ctx.fillRect(0, 0, 1200, 1200);
+
+            // 무지개 원형 그래픽
+            const colors = ['#EF4444', '#F97316', '#FACC15', '#22C55E', '#3B82F6', '#8B5CF6'];
+            colors.forEach((c, idx) => {
+                ctx.fillStyle = c;
+                ctx.beginPath();
+                ctx.arc(600, 650, 480 - idx * 60, Math.PI, 0);
+                ctx.fill();
+            });
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(320, 680, 110, 0, Math.PI * 2);
+            ctx.arc(460, 660, 130, 0, Math.PI * 2);
+            ctx.arc(740, 660, 130, 0, Math.PI * 2);
+            ctx.arc(880, 680, 110, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#111827';
+            ctx.font = '900 72px "Noto Sans KR", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`✨ ${label} ✨`, 600, 950);
+
+            state.imageDataUrl = canvas.toDataURL('image/png');
+            state.imageNaturalWidth = 1200;
+            state.imageNaturalHeight = 1200;
+            renderWorksheet();
+        }
+
+        // 그리드 비율에 맞춘 크롭 이미지 생성 (찌그러짐 방지 핵심 로직)
+        function createAspectCroppedImage(srcUrl, cols, rows, callback) {
+            const img = new Image();
+            img.onload = function() {
+                const targetRatio = cols / rows;
+                const srcRatio = img.width / img.height;
+
+                let drawWidth = img.width;
+                let drawHeight = img.height;
+                let offsetX = 0;
+                let offsetY = 0;
+
+                if (srcRatio > targetRatio) {
+                    drawWidth = img.height * targetRatio;
+                    offsetX = (img.width - drawWidth) / 2;
+                } else if (srcRatio < targetRatio) {
+                    drawHeight = img.width / targetRatio;
+                    offsetY = (img.height - drawHeight) / 2;
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = 1200;
+                canvas.height = Math.round(1200 / targetRatio);
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight, 0, 0, canvas.width, canvas.height);
+
+                callback(canvas.toDataURL('image/png'));
+            };
+            img.src = srcUrl;
+        }
+
+        // 학습지 렌더링 메인 함수
+        function renderWorksheet() {
+            const title = document.getElementById('worksheetTitle').value || '수학 그림 퍼즐';
+            const showInfo = document.getElementById('showStudentInfo').checked;
+            const teacherMode = document.getElementById('teacherMode').checked;
+            const layoutMode = document.getElementById('layoutMode').value;
+
+            // @page 인쇄 방향 동적 업데이트
+            const printStyleEl = document.getElementById('dynamic-print-style');
+            if (layoutMode === '1page-horizontal') {
+                printStyleEl.innerHTML = `@page { size: A4 landscape; margin: 0; }`;
+            } else {
+                printStyleEl.innerHTML = `@page { size: A4 portrait; margin: 0; }`;
+            }
+
+            createAspectCroppedImage(state.imageDataUrl, state.cols, state.rows, (croppedUrl) => {
+                const container = document.getElementById('worksheetContainer');
+                container.innerHTML = '';
+
+                // 폰트 크기 동적 계산
+                const maxDim = Math.max(state.cols, state.rows);
+                const exprFontSize = maxDim <= 3 ? '24px' : maxDim === 4 ? '19px' : maxDim === 5 ? '15px' : '12px';
+                const badgeSize = maxDim <= 4 ? '34px' : maxDim === 5 ? '28px' : '23px';
+                const badgeFont = maxDim <= 4 ? '16px' : maxDim === 5 ? '13px' : '11px';
+
+                // 헤더 HTML 생성기
+                const buildHeader = (subtitle) => `
+                    <div class="border-b-2 border-gray-900 pb-2 mb-3 flex items-end justify-between">
+                        <div>
+                            <h1 class="text-2xl font-black text-gray-900 tracking-tight">${title} ${teacherMode ? '<span class="text-sm bg-emerald-600 text-white px-2 py-0.5 rounded ml-1">교사용 정답지</span>' : ''}</h1>
+                            <p class="text-xs font-bold text-gray-600 mt-0.5">${subtitle}</p>
+                        </div>
+                        ${showInfo ? `
+                        <div class="text-xs font-bold text-gray-800 flex gap-4">
+                            <span>이름: _______________</span>
+                            <span>날짜: ____년 __월 __일</span>
+                        </div>` : ''}
+                    </div>
+                `;
+
+                // 문제 그리드 HTML 생성기
+                const buildProblemGrid = (widthPx, heightPx) => {
+                    let cellsHtml = '';
+                    state.problems.forEach((p, idx) => {
+                        const r = Math.floor(idx / state.cols);
+                        const c = idx % state.cols;
+                        const bgPosX = state.cols > 1 ? (c / (state.cols - 1)) * 100 : 0;
+                        const bgPosY = state.rows > 1 ? (r / (state.rows - 1)) * 100 : 0;
+
+                        if (teacherMode) {
+                            cellsHtml += `
+                                <div class="problem-cell" style="
+                                    background-image: url('${croppedUrl}');
+                                    background-size: ${state.cols * 100}% ${state.rows * 100}%;
+                                    background-position: ${bgPosX}% ${bgPosY}%;
+                                ">
+                                    <div class="teacher-overlay" style="font-size: ${exprFontSize};">
+                                        <span>${p.expr}</span>
+                                        <span class="text-red-600 underline text-xs mt-0.5">=${p.answer}</span>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            cellsHtml += `
+                                <div class="problem-cell" style="font-size: ${exprFontSize};">
+                                    ${p.expr}
+                                </div>
+                            `;
+                        }
+                    });
+
+                    return `
+                        <div style="
+                            width: ${widthPx}px;
+                            height: ${heightPx}px;
+                            display: grid;
+                            grid-template-columns: repeat(${state.cols}, 1fr);
+                            grid-template-rows: repeat(${state.rows}, 1fr);
+                            border: 3px solid #111827;
+                        ">
+                            ${cellsHtml}
+                        </div>
+                    `;
+                };
+
+                // 오리는 퍼즐 조각 그리드 HTML 생성기
+                const buildPiecesGrid = (widthPx, heightPx, gapPx = 6) => {
+                    let piecesHtml = '';
+                    state.shuffledPieces.forEach((piece) => {
+                        const origIdx = piece.correctIndex;
+                        const r = Math.floor(origIdx / state.cols);
+                        const c = origIdx % state.cols;
+                        const bgPosX = state.cols > 1 ? (c / (state.cols - 1)) * 100 : 0;
+                        const bgPosY = state.rows > 1 ? (r / (state.rows - 1)) * 100 : 0;
+
+                        piecesHtml += `
+                            <div class="puzzle-piece" style="
+                                background-image: url('${croppedUrl}');
+                                background-size: ${state.cols * 100}% ${state.rows * 100}%;
+                                background-position: ${bgPosX}% ${bgPosY}%;
+                            ">
+                                <div class="answer-badge" style="min-width: ${badgeSize}; height: ${badgeSize}; font-size: ${badgeFont};">
+                                    <span>${piece.answer}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    return `
+                        <div style="
+                            width: ${widthPx}px;
+                            height: ${heightPx}px;
+                            display: grid;
+                            grid-template-columns: repeat(${state.cols}, 1fr);
+                            grid-template-rows: repeat(${state.rows}, 1fr);
+                            gap: ${gapPx}px;
+                        ">
+                            ${piecesHtml}
+                        </div>
+                    `;
+                };
+
+                // 비율에 맞춰 최대 박스 크기 계산 헬퍼
+                const fitBox = (maxW, maxH, cols, rows) => {
+                    const ratio = cols / rows;
+                    let w = maxW;
+                    let h = w / ratio;
+                    if (h > maxH) {
+                        h = maxH;
+                        w = h * ratio;
+                    }
+                    return { w: Math.floor(w), h: Math.floor(h) };
+                };
+
+                // 레이아웃 모드별 렌더링
+                if (layoutMode === '1page-vertical') {
+                    // 세로 A4 1페이지 상하 분할
+                    const page = document.createElement('div');
+                    page.className = 'a4-page a4-portrait justify-between';
+
+                    const box = fitBox(640, 420, state.cols, state.rows);
+
+                    page.innerHTML = `
+                        <div>
+                            ${buildHeader('1. 빈칸의 문제를 풀고, 아래에서 알맞은 답이 적힌 그림 조각을 오려 붙이세요.')}
+                            <div class="flex flex-col items-center justify-center my-1">
+                                <span class="text-xs font-extrabold text-gray-700 mb-1 self-start">[붙이는 곳]</span>
+                                ${buildProblemGrid(box.w, box.h)}
+                            </div>
+                        </div>
+
+                        <div class="border-t-2 border-dashed border-gray-400 pt-2 mt-1 flex flex-col items-center">
+                            <div class="w-full flex items-center justify-between text-xs font-extrabold text-gray-700 mb-1.5">
+                                <span>✂️ [오리는 곳] 점선을 따라 반듯하게 오려주세요.</span>
+                                <span class="text-[11px] font-normal text-gray-500">* 숫자 아래 밑줄이 아래쪽 방향입니다.</span>
+                            </div>
+                            ${buildPiecesGrid(box.w, box.h, 5)}
+                        </div>
+                    `;
+                    container.appendChild(page);
+
+                } else if (layoutMode === '1page-horizontal') {
+                    // 가로 A4 1페이지 좌우 2단 분할 (3x5 등 추천)
+                    const page = document.createElement('div');
+                    page.className = 'a4-page a4-landscape justify-between';
+
+                    const box = fitBox(470, 560, state.cols, state.rows);
+
+                    page.innerHTML = `
+                        ${buildHeader('왼쪽의 문제를 풀고, 오른쪽에서 알맞은 답이 적힌 그림 조각을 오려 붙이세요.')}
+                        <div class="flex-1 flex items-center justify-around gap-4">
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs font-extrabold text-gray-800 mb-1.5 bg-gray-100 px-3 py-0.5 rounded-full">1단계: 문제 풀고 붙이는 곳</span>
+                                ${buildProblemGrid(box.w, box.h)}
+                            </div>
+
+                            <div class="h-full border-l-2 border-dashed border-gray-400 mx-1"></div>
+
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs font-extrabold text-gray-800 mb-1.5 bg-gray-100 px-3 py-0.5 rounded-full">✂️ 2단계: 점선 따라 오리는 곳</span>
+                                ${buildPiecesGrid(box.w, box.h, 6)}
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(page);
+
+                } else if (layoutMode === '2page-split') {
+                    // 세로 A4 2페이지 분리 인쇄 (5x5, 6x6 이상 추천)
+                    const box = fitBox(660, 860, state.cols, state.rows);
+
+                    // 1페이지: 문제 그리드
+                    const page1 = document.createElement('div');
+                    page1.className = 'a4-page a4-portrait';
+                    page1.innerHTML = `
+                        ${buildHeader('1페이지 [문제판] : 칸 안의 문제를 풀고 다음 장의 그림 조각을 오려 붙이세요.')}
+                        <div class="flex-1 flex flex-col items-center justify-center">
+                            ${buildProblemGrid(box.w, box.h)}
+                        </div>
+                    `;
+
+                    // 2페이지: 오리는 조각
+                    const page2 = document.createElement('div');
+                    page2.className = 'a4-page a4-portrait';
+                    page2.innerHTML = `
+                        <div class="border-b-2 border-gray-900 pb-2 mb-3 flex items-center justify-between">
+                            <div>
+                                <h2 class="text-xl font-black text-gray-900">${title} - ✂️ 퍼즐 조각 (오리는 곳)</h2>
+                                <p class="text-xs font-bold text-gray-600 mt-0.5">점선을 따라 조각을 오린 뒤, 앞장의 알맞은 정답 칸에 풀로 붙이세요. (밑줄이 아래쪽입니다)</p>
+                            </div>
+                            <span class="text-xs font-bold text-gray-500">2 / 2 쪽</span>
+                        </div>
+                        <div class="flex-1 flex flex-col items-center justify-center">
+                            ${buildPiecesGrid(box.w, box.h, 8)}
+                        </div>
+                    `;
+
+                    container.appendChild(page1);
+                    container.appendChild(page2);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
