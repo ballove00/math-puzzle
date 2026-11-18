@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>특수교육 맞춤형 사칙연산 그림 퍼즐 학습지 제작기</title>
+    <title>특수교육 맞춤형 사칙연산·수대응 그림 퍼즐 학습지 제작기</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
 
         body {
             font-family: 'Noto Sans KR', sans-serif;
@@ -79,6 +84,7 @@
             color: #000000;
             background-color: #ffffff;
             position: relative;
+            overflow: hidden;
             user-select: none;
         }
 
@@ -87,7 +93,15 @@
             position: relative;
             box-sizing: border-box;
             overflow: hidden;
-            background-color: #fff;
+            background-color: #ffffff;
+        }
+
+        /* 인쇄 시 100% 출력되도록 실제 img 태그로 조각 이미지 배치 */
+        .piece-img {
+            position: absolute;
+            max-width: none !important;
+            pointer-events: none;
+            z-index: 1;
         }
 
         /* 정답 숫자 고대비 배지 (6과 9 혼동 방지 밑줄 포함) */
@@ -96,7 +110,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(255, 255, 255, 0.94);
+            background-color: rgba(255, 255, 255, 0.95);
             border: 2.5px solid #000000;
             border-radius: 9999px;
             min-width: 34px;
@@ -111,7 +125,7 @@
             z-index: 10;
         }
 
-        .answer-badge span {
+        .answer-badge span, .single-num-underline {
             text-decoration: underline;
             text-decoration-thickness: 2.5px;
             text-underline-offset: 3px;
@@ -146,7 +160,7 @@
         <div class="flex items-center justify-between border-b pb-3 mb-4">
             <div>
                 <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">특수교육 맞춤형 교구</span>
-                <h1 class="text-xl font-black text-gray-900 mt-1">사칙연산 그림 퍼즐 제작기</h1>
+                <h1 class="text-xl font-black text-gray-900 mt-1">수학 그림 퍼즐 제작기</h1>
             </div>
             <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl shadow flex items-center gap-1.5 transition">
                 <span>🖨️</span> 인쇄하기
@@ -196,27 +210,39 @@
             </select>
         </section>
 
-        <!-- 3. 사칙연산 조건 설정 -->
+        <!-- 3. 연산 및 수 대응 조건 설정 -->
         <section class="mb-5 border-t pt-4">
             <div class="flex items-center justify-between mb-2">
-                <h2 class="text-sm font-bold text-gray-700">3. 사칙연산 문제 설정</h2>
+                <h2 class="text-sm font-bold text-gray-700">3. 학습 수준 및 연산 설정</h2>
                 <button onclick="regenerateProblems()" class="text-xs bg-gray-800 hover:bg-gray-900 text-white px-2.5 py-1 rounded-md font-bold flex items-center gap-1">
                     <span>🔄</span> 문제·조각 새로 섞기
                 </button>
             </div>
 
+            <!-- 기초 단계: 1:1 숫자 대응 옵션 -->
+            <div class="mb-2">
+                <label class="flex items-center justify-between border-2 border-indigo-200 bg-indigo-50/70 hover:bg-indigo-50 rounded-lg px-3 py-2 text-xs font-bold cursor-pointer text-indigo-950">
+                    <span class="flex items-center gap-2">
+                        <input type="checkbox" class="op-check" value="match" onchange="onOpChange(this)">
+                        <span>🔢 1:1 숫자 대응 (같은 숫자 찾아 붙이기)</span>
+                    </span>
+                    <span class="text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded">기초 수인지</span>
+                </label>
+            </div>
+
+            <!-- 사칙연산 선택 -->
             <div class="grid grid-cols-4 gap-1.5 mb-3">
                 <label class="flex items-center justify-center gap-1 border rounded-lg py-1.5 text-xs font-bold cursor-pointer bg-gray-50">
-                    <input type="checkbox" class="op-check" value="+" checked onchange="regenerateProblems()"> 덧셈(+)
+                    <input type="checkbox" class="op-check" value="+" checked onchange="onOpChange(this)"> 덧셈(+)
                 </label>
                 <label class="flex items-center justify-center gap-1 border rounded-lg py-1.5 text-xs font-bold cursor-pointer bg-gray-50">
-                    <input type="checkbox" class="op-check" value="-" checked onchange="regenerateProblems()"> 뺄셈(-)
+                    <input type="checkbox" class="op-check" value="-" checked onchange="onOpChange(this)"> 뺄셈(-)
                 </label>
                 <label class="flex items-center justify-center gap-1 border rounded-lg py-1.5 text-xs font-bold cursor-pointer bg-gray-50">
-                    <input type="checkbox" class="op-check" value="*" onchange="regenerateProblems()"> 곱셈(×)
+                    <input type="checkbox" class="op-check" value="*" onchange="onOpChange(this)"> 곱셈(×)
                 </label>
                 <label class="flex items-center justify-center gap-1 border rounded-lg py-1.5 text-xs font-bold cursor-pointer bg-gray-50">
-                    <input type="checkbox" class="op-check" value="/" onchange="regenerateProblems()"> 나눗셈(÷)
+                    <input type="checkbox" class="op-check" value="/" onchange="onOpChange(this)"> 나눗셈(÷)
                 </label>
             </div>
 
@@ -235,7 +261,7 @@
             </div>
 
             <div id="duplicateWarning" class="hidden text-xs bg-amber-50 border border-amber-300 text-amber-800 px-2.5 py-1.5 rounded-lg mt-2">
-                ⚠️ 선택한 숫자 범위가 그리드 칸 수보다 좁아 일부 같은 정답이 포함됩니다. (같은 답 조각은 어디에 붙여도 그림이 완성됩니다)
+                ⚠️ 선택한 숫자 범위가 그리드 칸 수보다 좁아 일부 같은 숫자가 반복 출제됩니다. (같은 숫자 조각은 어느 칸에 붙여도 그림이 완성됩니다)
             </div>
         </section>
 
@@ -243,13 +269,11 @@
         <section class="mb-4 border-t pt-4">
             <h2 class="text-sm font-bold text-gray-700 mb-2">4. 퍼즐 그림 선택</h2>
 
-            <!-- 탭 버튼 -->
             <div class="flex border-b border-gray-200 mb-3 text-xs font-bold">
                 <button id="tabBtnUpload" onclick="switchImageTab('upload')" class="flex-1 py-2 border-b-2 border-indigo-600 text-indigo-600">📁 직접 업로드</button>
                 <button id="tabBtnAI" onclick="switchImageTab('ai')" class="flex-1 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">✨ AI 그림 생성</button>
             </div>
 
-            <!-- 탭 1: 직접 업로드 & 픽셀 가이드 -->
             <div id="tabPanelUpload">
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-2.5 mb-2.5 text-xs text-blue-900">
                     <p class="font-bold">📐 현재 그리드(<span id="guideGridText">4×4</span>) 권장 이미지 규격</p>
@@ -269,7 +293,6 @@
                 <div id="imageQualityFeedback" class="mt-2 text-xs hidden"></div>
             </div>
 
-            <!-- 탭 2: AI 그림 생성 API 연동 -->
             <div id="tabPanelAI" class="hidden">
                 <div class="mb-2">
                     <label class="block text-[11px] font-bold text-gray-600 mb-1">OpenAI API Key (선택사항 - 미입력 시 테스트용 고대비 그림 생성)</label>
@@ -287,7 +310,6 @@
                 </div>
             </div>
 
-            <!-- 기본 고대비 샘플 일러스트 선택 -->
             <div class="mt-3">
                 <span class="block text-[11px] font-bold text-gray-500 mb-1.5">기본 제공 고대비 일러스트 샘플:</span>
                 <div class="grid grid-cols-3 gap-2">
@@ -305,24 +327,21 @@
     </main>
 
     <script>
-        // 전역 상태 관리
         let state = {
             cols: 4,
             rows: 4,
-            problems: [], // { expr, answer, correctIndex }
+            problems: [], // { expr, answer, correctIndex, isMatchOnly }
             shuffledPieces: [], // { correctIndex, answer }
             imageDataUrl: null,
             imageNaturalWidth: 1200,
             imageNaturalHeight: 1200
         };
 
-        // 초기화
         window.onload = () => {
             useBuiltInSample('rocket');
             regenerateProblems();
         };
 
-        // 탭 전환
         function switchImageTab(tab) {
             const btnUp = document.getElementById('tabBtnUpload');
             const btnAI = document.getElementById('tabBtnAI');
@@ -342,7 +361,6 @@
             }
         }
 
-        // 그리드 프리셋 선택
         function setGrid(cols, rows) {
             document.getElementById('gridCols').value = cols;
             document.getElementById('gridRows').value = rows;
@@ -358,7 +376,6 @@
             onGridManualChange();
         }
 
-        // 그리드 변경 시 레이아웃 및 픽셀 가이드 자동 추천
         function onGridManualChange() {
             let cols = parseInt(document.getElementById('gridCols').value) || 4;
             let rows = parseInt(document.getElementById('gridRows').value) || 4;
@@ -367,19 +384,16 @@
             state.cols = cols;
             state.rows = rows;
 
-            // 픽셀 비율 가이드 업데이트
             const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
             const divisor = gcd(cols, rows);
             document.getElementById('guideGridText').innerText = `${cols}×${rows}`;
             document.getElementById('guideRatioText').innerText = `${cols/divisor}:${rows/divisor} (${cols === rows ? '정사각형' : (cols < rows ? '세로형' : '가로형')})`;
 
-            // 스마트 레이아웃 자동 추천
             const layoutSelect = document.getElementById('layoutMode');
             const total = cols * rows;
             if (total >= 25) {
                 layoutSelect.value = '2page-split';
             } else if (rows > cols) {
-                // 예: 3x5, 4x5 등 세로로 긴 그리드는 가로 A4 좌우 2단 추천
                 layoutSelect.value = '1page-horizontal';
             } else {
                 layoutSelect.value = '1page-vertical';
@@ -388,7 +402,6 @@
             regenerateProblems();
         }
 
-        // 숫자 범위 프리셋
         function applyRangePreset(val) {
             if (!val) return;
             const [min, max] = val.split(',');
@@ -397,7 +410,29 @@
             regenerateProblems();
         }
 
-        // 사칙연산 문제 생성기 (중복 정답 최소화 로직 포함)
+        // 연산 체크박스 변경 핸들러 (1:1 숫자 대응 단독/혼합 선택 UX 지원)
+        function onOpChange(changedCheckbox) {
+            const allChecks = Array.from(document.querySelectorAll('.op-check'));
+            const matchCheck = document.querySelector('.op-check[value="match"]');
+            const arithChecks = allChecks.filter(cb => cb.value !== 'match');
+
+            // 1:1 숫자 대응을 방금 체크했다면, 교사 편의를 위해 기존 사칙연산 체크를 자동 해제 (원하면 다시 혼합 체크 가능)
+            if (changedCheckbox.value === 'match' && changedCheckbox.checked) {
+                arithChecks.forEach(cb => cb.checked = false);
+            } else if (changedCheckbox.value !== 'match' && changedCheckbox.checked) {
+                // 사칙연산을 선택하면 1:1 숫자 대응은 해제
+                matchCheck.checked = false;
+            }
+
+            // 아무것도 선택되지 않았을 때 기본값 복구
+            if (!allChecks.some(cb => cb.checked)) {
+                changedCheckbox.checked = true;
+            }
+
+            regenerateProblems();
+        }
+
+        // 문제 생성기 (1:1 숫자 대응 + 사칙연산 지원)
         function regenerateProblems() {
             const totalCells = state.cols * state.rows;
             const ops = Array.from(document.querySelectorAll('.op-check:checked')).map(cb => cb.value);
@@ -414,53 +449,81 @@
             const usedAnswers = new Set();
             let duplicateOccurred = false;
 
+            // 1:1 숫자 대응 전용 모드일 경우, 범위 내 숫자들을 순차/무작위 배분하여 중복 최소화
+            let numberPool = [];
+            if (ops.length === 1 && ops[0] === 'match') {
+                for (let n = min; n <= max; n++) {
+                    numberPool.push(n);
+                }
+                // 셔플
+                for (let i = numberPool.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [numberPool[i], numberPool[j]] = [numberPool[j], numberPool[i]];
+                }
+            }
+
             for (let i = 0; i < totalCells; i++) {
                 let expr = '';
                 let answer = 0;
+                let isMatchOnly = false;
                 let attempts = 0;
 
-                while (attempts < 150) {
-                    const op = ops[Math.floor(Math.random() * ops.length)];
-                    let a = Math.floor(Math.random() * (max - min + 1)) + min;
-                    let b = Math.floor(Math.random() * (max - min + 1)) + min;
+                const op = ops[Math.floor(Math.random() * ops.length)];
 
-                    if (op === '+') {
-                        expr = `${a} + ${b}`;
-                        answer = a + b;
-                    } else if (op === '-') {
-                        if (a < b) [a, b] = [b, a];
-                        expr = `${a} - ${b}`;
-                        answer = a - b;
-                    } else if (op === '*') {
-                        // 곱셈은 숫자가 너무 커지지 않게 적절히 제한
-                        const mulMax = Math.min(max, 19);
-                        a = Math.floor(Math.random() * (mulMax - Math.max(1, min) + 1)) + Math.max(1, min);
-                        b = Math.floor(Math.random() * 9) + 1;
-                        expr = `${a} × ${b}`;
-                        answer = a * b;
-                    } else if (op === '/') {
-                        const divMax = Math.min(max, 15);
-                        b = Math.floor(Math.random() * 8) + 2; // 2~9로 나누기
-                        answer = Math.floor(Math.random() * (divMax - Math.max(1, min) + 1)) + Math.max(1, min);
-                        a = b * answer;
-                        expr = `${a} ÷ ${b}`;
+                if (op === 'match') {
+                    isMatchOnly = true;
+                    if (numberPool.length > 0 && i < numberPool.length) {
+                        answer = numberPool[i];
+                    } else {
+                        answer = Math.floor(Math.random() * (max - min + 1)) + min;
+                        duplicateOccurred = true;
+                    }
+                    expr = `${answer}`;
+                    usedAnswers.add(answer);
+                } else {
+                    while (attempts < 150) {
+                        const currentOp = ops[Math.floor(Math.random() * ops.length)];
+                        let a = Math.floor(Math.random() * (max - min + 1)) + min;
+                        let b = Math.floor(Math.random() * (max - min + 1)) + min;
+
+                        if (currentOp === '+') {
+                            expr = `${a} + ${b}`;
+                            answer = a + b;
+                        } else if (currentOp === '-') {
+                            if (a < b) [a, b] = [b, a];
+                            expr = `${a} - ${b}`;
+                            answer = a - b;
+                        } else if (currentOp === '*') {
+                            const mulMax = Math.min(max, 19);
+                            a = Math.floor(Math.random() * (mulMax - Math.max(1, min) + 1)) + Math.max(1, min);
+                            b = Math.floor(Math.random() * 9) + 1;
+                            expr = `${a} × ${b}`;
+                            answer = a * b;
+                        } else if (currentOp === '/') {
+                            const divMax = Math.min(max, 15);
+                            b = Math.floor(Math.random() * 8) + 2;
+                            answer = Math.floor(Math.random() * (divMax - Math.max(1, min) + 1)) + Math.max(1, min);
+                            a = b * answer;
+                            expr = `${a} ÷ ${b}`;
+                        }
+
+                        if (!usedAnswers.has(answer)) {
+                            usedAnswers.add(answer);
+                            break;
+                        }
+                        attempts++;
                     }
 
-                    if (!usedAnswers.has(answer)) {
-                        usedAnswers.add(answer);
-                        break;
+                    if (attempts >= 150) {
+                        duplicateOccurred = true;
                     }
-                    attempts++;
-                }
-
-                if (attempts >= 150) {
-                    duplicateOccurred = true;
                 }
 
                 problems.push({
                     expr,
                     answer,
-                    correctIndex: i
+                    correctIndex: i,
+                    isMatchOnly
                 });
             }
 
@@ -476,7 +539,6 @@
                 const j = Math.floor(Math.random() * (i + 1));
                 [pieces[i], pieces[j]] = [pieces[j], pieces[i]];
             }
-            // 원래 순서와 완전히 같다면 한 번 더 스왑
             if (pieces.length > 1 && pieces.every((p, idx) => p.correctIndex === idx)) {
                 [pieces[0], pieces[1]] = [pieces[1], pieces[0]];
             }
@@ -485,7 +547,6 @@
             renderWorksheet();
         }
 
-        // 로컬 이미지 업로드 및 해상도 검증
         function handleImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -517,7 +578,6 @@
             reader.readAsDataURL(file);
         }
 
-        // AI 이미지 생성 (OpenAI DALL-E 3 연동 + 키 미입력 시 고대비 커스텀 캔버스 폴백)
         async function generateAIImage() {
             const promptText = document.getElementById('aiPromptInput').value.trim();
             if (!promptText) {
@@ -530,7 +590,6 @@
             btn.disabled = true;
             btn.innerText = '생성 중...';
 
-            // 특수교육 최적화 프롬프트 래퍼
             const enhancedPrompt = `${promptText}, flat vector illustration for children, thick black outlines, bright distinct solid colors, simple clean white background, high contrast, educational puzzle art, no text`;
 
             try {
@@ -557,7 +616,6 @@
                     state.imageNaturalHeight = 1024;
                     renderWorksheet();
                 } else {
-                    // API 키 없을 시 고해상도 샘플 일러스트 생성 (시뮬레이션)
                     await new Promise(r => setTimeout(r, 600));
                     generateCanvasIllustration(promptText);
                 }
@@ -569,18 +627,15 @@
             }
         }
 
-        // 기본 고대비 일러스트 생성기 (Canvas API 1200x1200 고해상도 출력)
         function useBuiltInSample(type) {
             const canvas = document.createElement('canvas');
             canvas.width = 1200;
             canvas.height = 1200;
             const ctx = canvas.getContext('2d');
 
-            // 배경
             ctx.fillStyle = '#E0F2FE';
             ctx.fillRect(0, 0, 1200, 1200);
 
-            // 테두리 프레임 (조각 위치 힌트 역할)
             ctx.strokeStyle = '#0284C7';
             ctx.lineWidth = 28;
             ctx.strokeRect(14, 14, 1172, 1172);
@@ -591,7 +646,6 @@
             if (type === 'apple') {
                 ctx.fillStyle = '#FEF3C7';
                 ctx.fillRect(0, 0, 1200, 1200);
-                // 잎사귀
                 ctx.fillStyle = '#16A34A';
                 ctx.beginPath();
                 ctx.ellipse(680, 230, 110, 55, -0.4, 0, Math.PI * 2);
@@ -600,14 +654,12 @@
                 ctx.strokeStyle = '#111827';
                 ctx.stroke();
 
-                // 꼭지
                 ctx.beginPath();
                 ctx.moveTo(600, 320);
                 ctx.quadraticCurveTo(590, 200, 630, 150);
                 ctx.lineWidth = 22;
                 ctx.stroke();
 
-                // 사과 몸통
                 ctx.fillStyle = '#EF4444';
                 ctx.beginPath();
                 ctx.moveTo(600, 340);
@@ -619,7 +671,6 @@
                 ctx.lineWidth = 18;
                 ctx.stroke();
 
-                // 웃는 얼굴
                 ctx.fillStyle = '#111827';
                 ctx.beginPath();
                 ctx.arc(490, 600, 28, 0, Math.PI * 2);
@@ -635,7 +686,6 @@
                 ctx.fillStyle = '#1E1B4B';
                 ctx.fillRect(0, 0, 1200, 1200);
 
-                // 배경 별들
                 ctx.fillStyle = '#FACC15';
                 [[200,220,35],[980,260,40],[240,920,30],[960,880,35],[580,140,25]].forEach(([x,y,r]) => {
                     ctx.beginPath();
@@ -643,7 +693,6 @@
                     ctx.fill();
                 });
 
-                // 불꽃
                 ctx.fillStyle = '#F97316';
                 ctx.beginPath();
                 ctx.moveTo(480, 860);
@@ -655,7 +704,6 @@
                 ctx.strokeStyle = '#FDE047';
                 ctx.stroke();
 
-                // 날개
                 ctx.fillStyle = '#EF4444';
                 ctx.beginPath();
                 ctx.moveTo(430, 620);
@@ -674,7 +722,6 @@
                 ctx.fill();
                 ctx.stroke();
 
-                // 로켓 몸체
                 ctx.fillStyle = '#F8FAFC';
                 ctx.beginPath();
                 ctx.moveTo(600, 200);
@@ -686,7 +733,6 @@
                 ctx.strokeStyle = '#38BDF8';
                 ctx.stroke();
 
-                // 창문
                 ctx.fillStyle = '#38BDF8';
                 ctx.beginPath();
                 ctx.arc(600, 530, 105, 0, Math.PI * 2);
@@ -696,7 +742,6 @@
                 ctx.stroke();
 
             } else {
-                // 웃는 별님
                 ctx.fillStyle = '#ECFDF5';
                 ctx.fillRect(0, 0, 1200, 1200);
 
@@ -718,7 +763,6 @@
                 ctx.strokeStyle = '#111827';
                 ctx.stroke();
 
-                // 눈 & 미소
                 ctx.fillStyle = '#111827';
                 ctx.beginPath();
                 ctx.arc(510, 560, 26, 0, Math.PI * 2);
@@ -746,7 +790,6 @@
             ctx.fillStyle = '#FEF9C3';
             ctx.fillRect(0, 0, 1200, 1200);
 
-            // 무지개 원형 그래픽
             const colors = ['#EF4444', '#F97316', '#FACC15', '#22C55E', '#3B82F6', '#8B5CF6'];
             colors.forEach((c, idx) => {
                 ctx.fillStyle = c;
@@ -774,7 +817,6 @@
             renderWorksheet();
         }
 
-        // 그리드 비율에 맞춘 크롭 이미지 생성 (찌그러짐 방지 핵심 로직)
         function createAspectCroppedImage(srcUrl, cols, rows, callback) {
             const img = new Image();
             img.onload = function() {
@@ -805,14 +847,12 @@
             img.src = srcUrl;
         }
 
-        // 학습지 렌더링 메인 함수
         function renderWorksheet() {
             const title = document.getElementById('worksheetTitle').value || '수학 그림 퍼즐';
             const showInfo = document.getElementById('showStudentInfo').checked;
             const teacherMode = document.getElementById('teacherMode').checked;
             const layoutMode = document.getElementById('layoutMode').value;
 
-            // @page 인쇄 방향 동적 업데이트
             const printStyleEl = document.getElementById('dynamic-print-style');
             if (layoutMode === '1page-horizontal') {
                 printStyleEl.innerHTML = `@page { size: A4 landscape; margin: 0; }`;
@@ -824,13 +864,24 @@
                 const container = document.getElementById('worksheetContainer');
                 container.innerHTML = '';
 
-                // 폰트 크기 동적 계산
                 const maxDim = Math.max(state.cols, state.rows);
+                // 수식일 때와 단일 숫자(1:1 대응)일 때 폰트 크기 최적화
                 const exprFontSize = maxDim <= 3 ? '24px' : maxDim === 4 ? '19px' : maxDim === 5 ? '15px' : '12px';
+                const singleNumFontSize = maxDim <= 3 ? '36px' : maxDim === 4 ? '28px' : maxDim === 5 ? '22px' : '17px';
                 const badgeSize = maxDim <= 4 ? '34px' : maxDim === 5 ? '28px' : '23px';
                 const badgeFont = maxDim <= 4 ? '16px' : maxDim === 5 ? '13px' : '11px';
 
-                // 헤더 HTML 생성기
+                // 1:1 숫자 대응 모드 여부에 따라 안내 문구 자동 맞춤
+                const isAllMatchMode = state.problems.length > 0 && state.problems.every(p => p.isMatchOnly);
+
+                const buildPieceImgTag = (rowIdx, colIdx) => {
+                    const widthPct = state.cols * 100;
+                    const heightPct = state.rows * 100;
+                    const leftPct = -(colIdx * 100);
+                    const topPct = -(rowIdx * 100);
+                    return `<img src="${croppedUrl}" class="piece-img" style="width: ${widthPct}%; height: ${heightPct}%; left: ${leftPct}%; top: ${topPct}%;" alt="">`;
+                };
+
                 const buildHeader = (subtitle) => `
                     <div class="border-b-2 border-gray-900 pb-2 mb-3 flex items-end justify-between">
                         <div>
@@ -845,32 +896,27 @@
                     </div>
                 `;
 
-                // 문제 그리드 HTML 생성기
                 const buildProblemGrid = (widthPx, heightPx) => {
                     let cellsHtml = '';
                     state.problems.forEach((p, idx) => {
                         const r = Math.floor(idx / state.cols);
                         const c = idx % state.cols;
-                        const bgPosX = state.cols > 1 ? (c / (state.cols - 1)) * 100 : 0;
-                        const bgPosY = state.rows > 1 ? (r / (state.rows - 1)) * 100 : 0;
+                        const currentFontSize = p.isMatchOnly ? singleNumFontSize : exprFontSize;
 
                         if (teacherMode) {
                             cellsHtml += `
-                                <div class="problem-cell" style="
-                                    background-image: url('${croppedUrl}');
-                                    background-size: ${state.cols * 100}% ${state.rows * 100}%;
-                                    background-position: ${bgPosX}% ${bgPosY}%;
-                                ">
-                                    <div class="teacher-overlay" style="font-size: ${exprFontSize};">
-                                        <span>${p.expr}</span>
-                                        <span class="text-red-600 underline text-xs mt-0.5">=${p.answer}</span>
+                                <div class="problem-cell">
+                                    ${buildPieceImgTag(r, c)}
+                                    <div class="teacher-overlay" style="font-size: ${currentFontSize};">
+                                        <span class="${p.isMatchOnly ? 'single-num-underline' : ''}">${p.expr}</span>
+                                        ${!p.isMatchOnly ? `<span class="text-red-600 underline text-xs mt-0.5">=${p.answer}</span>` : ''}
                                     </div>
                                 </div>
                             `;
                         } else {
                             cellsHtml += `
-                                <div class="problem-cell" style="font-size: ${exprFontSize};">
-                                    ${p.expr}
+                                <div class="problem-cell" style="font-size: ${currentFontSize};">
+                                    <span class="${p.isMatchOnly ? 'single-num-underline' : ''}">${p.expr}</span>
                                 </div>
                             `;
                         }
@@ -890,22 +936,16 @@
                     `;
                 };
 
-                // 오리는 퍼즐 조각 그리드 HTML 생성기
                 const buildPiecesGrid = (widthPx, heightPx, gapPx = 6) => {
                     let piecesHtml = '';
                     state.shuffledPieces.forEach((piece) => {
                         const origIdx = piece.correctIndex;
                         const r = Math.floor(origIdx / state.cols);
                         const c = origIdx % state.cols;
-                        const bgPosX = state.cols > 1 ? (c / (state.cols - 1)) * 100 : 0;
-                        const bgPosY = state.rows > 1 ? (r / (state.rows - 1)) * 100 : 0;
 
                         piecesHtml += `
-                            <div class="puzzle-piece" style="
-                                background-image: url('${croppedUrl}');
-                                background-size: ${state.cols * 100}% ${state.rows * 100}%;
-                                background-position: ${bgPosX}% ${bgPosY}%;
-                            ">
+                            <div class="puzzle-piece">
+                                ${buildPieceImgTag(r, c)}
                                 <div class="answer-badge" style="min-width: ${badgeSize}; height: ${badgeSize}; font-size: ${badgeFont};">
                                     <span>${piece.answer}</span>
                                 </div>
@@ -927,7 +967,6 @@
                     `;
                 };
 
-                // 비율에 맞춰 최대 박스 크기 계산 헬퍼
                 const fitBox = (maxW, maxH, cols, rows) => {
                     const ratio = cols / rows;
                     let w = maxW;
@@ -939,17 +978,17 @@
                     return { w: Math.floor(w), h: Math.floor(h) };
                 };
 
-                // 레이아웃 모드별 렌더링
                 if (layoutMode === '1page-vertical') {
-                    // 세로 A4 1페이지 상하 분할
                     const page = document.createElement('div');
                     page.className = 'a4-page a4-portrait justify-between';
-
                     const box = fitBox(640, 420, state.cols, state.rows);
+                    const guideText = isAllMatchMode
+                        ? '1. 칸 안의 숫자를 보고, 아래에서 똑같은 숫자가 적힌 그림 조각을 찾아 오려 붙이세요.'
+                        : '1. 빈칸의 문제를 풀고, 아래에서 알맞은 답이 적힌 그림 조각을 오려 붙이세요.';
 
                     page.innerHTML = `
                         <div>
-                            ${buildHeader('1. 빈칸의 문제를 풀고, 아래에서 알맞은 답이 적힌 그림 조각을 오려 붙이세요.')}
+                            ${buildHeader(guideText)}
                             <div class="flex flex-col items-center justify-center my-1">
                                 <span class="text-xs font-extrabold text-gray-700 mb-1 self-start">[붙이는 곳]</span>
                                 ${buildProblemGrid(box.w, box.h)}
@@ -967,17 +1006,18 @@
                     container.appendChild(page);
 
                 } else if (layoutMode === '1page-horizontal') {
-                    // 가로 A4 1페이지 좌우 2단 분할 (3x5 등 추천)
                     const page = document.createElement('div');
                     page.className = 'a4-page a4-landscape justify-between';
-
                     const box = fitBox(470, 560, state.cols, state.rows);
+                    const guideText = isAllMatchMode
+                        ? '왼쪽의 숫자를 보고, 오른쪽에서 똑같은 숫자가 적힌 그림 조각을 찾아 오려 붙이세요.'
+                        : '왼쪽의 문제를 풀고, 오른쪽에서 알맞은 답이 적힌 그림 조각을 오려 붙이세요.';
 
                     page.innerHTML = `
-                        ${buildHeader('왼쪽의 문제를 풀고, 오른쪽에서 알맞은 답이 적힌 그림 조각을 오려 붙이세요.')}
+                        ${buildHeader(guideText)}
                         <div class="flex-1 flex items-center justify-around gap-4">
                             <div class="flex flex-col items-center">
-                                <span class="text-xs font-extrabold text-gray-800 mb-1.5 bg-gray-100 px-3 py-0.5 rounded-full">1단계: 문제 풀고 붙이는 곳</span>
+                                <span class="text-xs font-extrabold text-gray-800 mb-1.5 bg-gray-100 px-3 py-0.5 rounded-full">1단계: ${isAllMatchMode ? '숫자 보고 붙이는 곳' : '문제 풀고 붙이는 곳'}</span>
                                 ${buildProblemGrid(box.w, box.h)}
                             </div>
 
@@ -992,27 +1032,27 @@
                     container.appendChild(page);
 
                 } else if (layoutMode === '2page-split') {
-                    // 세로 A4 2페이지 분리 인쇄 (5x5, 6x6 이상 추천)
                     const box = fitBox(660, 860, state.cols, state.rows);
+                    const guideText = isAllMatchMode
+                        ? '1페이지 [숫자판] : 칸 안의 숫자와 똑같은 숫자가 적힌 다음 장의 그림 조각을 오려 붙이세요.'
+                        : '1페이지 [문제판] : 칸 안의 문제를 풀고 다음 장의 그림 조각을 오려 붙이세요.';
 
-                    // 1페이지: 문제 그리드
                     const page1 = document.createElement('div');
                     page1.className = 'a4-page a4-portrait';
                     page1.innerHTML = `
-                        ${buildHeader('1페이지 [문제판] : 칸 안의 문제를 풀고 다음 장의 그림 조각을 오려 붙이세요.')}
+                        ${buildHeader(guideText)}
                         <div class="flex-1 flex flex-col items-center justify-center">
                             ${buildProblemGrid(box.w, box.h)}
                         </div>
                     `;
 
-                    // 2페이지: 오리는 조각
                     const page2 = document.createElement('div');
                     page2.className = 'a4-page a4-portrait';
                     page2.innerHTML = `
                         <div class="border-b-2 border-gray-900 pb-2 mb-3 flex items-center justify-between">
                             <div>
                                 <h2 class="text-xl font-black text-gray-900">${title} - ✂️ 퍼즐 조각 (오리는 곳)</h2>
-                                <p class="text-xs font-bold text-gray-600 mt-0.5">점선을 따라 조각을 오린 뒤, 앞장의 알맞은 정답 칸에 풀로 붙이세요. (밑줄이 아래쪽입니다)</p>
+                                <p class="text-xs font-bold text-gray-600 mt-0.5">점선을 따라 조각을 오린 뒤, 앞장의 알맞은 칸에 풀로 붙이세요. (밑줄이 아래쪽입니다)</p>
                             </div>
                             <span class="text-xs font-bold text-gray-500">2 / 2 쪽</span>
                         </div>
