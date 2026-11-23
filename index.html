@@ -6,7 +6,7 @@
     <title>특수교육 맞춤형 사칙연산·수대응 그림 퍼즐 학습지 제작기</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700;900&display=swap');
         @import url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumSquareRound.woff');
 
         @font-face {
@@ -82,36 +82,98 @@
             }
         }
 
-        /* 상단 날짜·이름 덮어쓰기(따라쓰기) 밑줄 슬롯 */
-        .info-trace-slot {
+        /* 상단 헤더 영역 (가로 구분선 바로 위까지 포함) */
+        .worksheet-fancy-header {
+            border-bottom: 1.8px solid #d1d5db;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        /* 좌측: 둥근 메인 타이틀 */
+        .header-brand-title {
+            font-family: 'Jua', 'NanumSquareRound', 'Noto Sans KR', sans-serif;
+            letter-spacing: -0.5px;
+            line-height: 1.15;
+        }
+
+        /* 노란 퍼즐 배지 */
+        .header-yellow-badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border-bottom: 2px solid #1f2937;
-            padding: 0 4px 2px 4px;
-            line-height: 1.1;
-            vertical-align: baseline;
-            box-sizing: border-box;
+            background: linear-gradient(135deg, #fde047 0%, #facc15 100%);
+            color: #ffffff;
+            text-shadow: 0 1px 2px rgba(180, 83, 9, 0.38);
+            font-family: 'Jua', 'Noto Sans KR', sans-serif;
+            border-radius: 9999px;
+            box-shadow: 0 2px 6px rgba(250, 204, 21, 0.35);
+            flex-shrink: 0;
+            line-height: 1;
         }
 
-        /* 학생이 쉽게 덮어쓸 수 있도록 나눔스퀘어라운드 얇은 단일선 + 연한 회색 + 자간 적용 */
+        /* 노란 퍼즐 배지 옆에 나란히 배치되는 조화로운 카테고리 캡슐 배지 */
+        .header-topic-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+            color: #ffffff;
+            text-shadow: 0 1px 2px rgba(154, 52, 18, 0.32);
+            font-family: 'Jua', 'Noto Sans KR', sans-serif;
+            border-radius: 9999px;
+            box-shadow: 0 2px 6px rgba(249, 115, 22, 0.28);
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        /* 우측: 크림/아이보리 둥근 기입 박스 */
+        .cream-fill-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f6f2e4;
+            border-radius: 8px;
+            padding: 3px 8px;
+            line-height: 1.15;
+            box-sizing: border-box;
+            min-height: 1.75em;
+        }
+
+        /* 학생이 쉽게 덮어쓸 수 있도록 단일선 + 연한 회색 적용 */
         .info-trace-text {
             font-family: 'NanumSquareRound', 'Noto Sans KR', sans-serif;
-            color: #b8c2ce;
+            color: #9ca3af;
             font-weight: 400;
             letter-spacing: 1.5px;
             white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* 날짜 기본 빈칸("월", "일" 기본 표시) 내부 정렬 */
-        .date-default-units {
-            display: inline-flex;
-            align-items: baseline;
+        /* 학습지 오른쪽 하단 선생님 마스코트 배치 (생성된 원본 이미지 그대로 출력) */
+        .teacher-corner-mascot {
+            position: absolute;
+            right: 5mm;
+            bottom: 4mm;
+            pointer-events: none;
+            z-index: 20;
+            display: flex;
+            align-items: flex-end;
             justify-content: flex-end;
+        }
+
+        .teacher-corner-mascot img,
+        .teacher-corner-mascot svg {
             width: 100%;
-            color: #111827;
-            font-weight: 700;
-            white-space: nowrap;
+            height: 100%;
+            object-fit: contain;
+            mix-blend-mode: multiply;
         }
 
         /* 퍼즐 조각 및 그리드 스타일 */
@@ -156,7 +218,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            line-height: 1.1;
+            line-height: 1.08;
+            white-space: nowrap;
         }
 
         /* 하단 정답 기입란 (= + 빨간색 테두리 사각형) */
@@ -181,21 +244,25 @@
             overflow: hidden;
         }
 
-        /* 학생 따라쓰기용 정답 텍스트 스타일 (겹침 없는 단일 가이드 선) */
+        /* 학생 따라쓰기용 정답 텍스트 스타일 */
         .dotted-trace-text {
             font-family: 'NanumSquareRound', 'Noto Sans KR', sans-serif;
-            color: #b8c2ce;
+            color: #9ca3af;
             font-weight: 400;
-            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* 1:1 숫자 대응 큰 글씨용 덮어쓰기 스타일 (밑줄 없음) */
+        /* 1:1 숫자 대응 큰 글씨용 덮어쓰기 스타일 */
         .dotted-trace-text-large {
             font-family: 'NanumSquareRound', 'Noto Sans KR', sans-serif;
-            color: #b8c2ce;
+            color: #9ca3af;
             font-weight: 400;
-            letter-spacing: 2px;
             line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* 문제판 1:1 숫자 기본 스타일 (밑줄 없음) */
@@ -374,6 +441,7 @@
 
             <div id="titleInputWrapper" class="mb-2">
                 <input type="text" id="worksheetTitle" value="재미있는 수학 그림 퍼즐" oninput="renderWorksheet()"
+                    placeholder="메인 제목 입력 (어절마다 다채로운 색상 자동 적용)"
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-indigo-500">
             </div>
 
@@ -392,8 +460,8 @@
             <div id="studentInfoDetailBox" class="mt-2.5 bg-gray-50 border border-gray-200 rounded-lg p-2.5 space-y-2.5">
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-[11px] font-bold text-gray-700 mb-1">📅 날짜 (월·일 덮어쓰기)</label>
-                        <input type="text" id="studentDateInput" placeholder="예: 11월 20일" oninput="renderWorksheet()"
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">📅 날짜 (숫자만 덮어쓰기)</label>
+                        <input type="text" id="studentDateInput" placeholder="예: 11월 20일 또는 11 20" oninput="renderWorksheet()"
                             class="w-full border border-gray-300 bg-white rounded-md px-2 py-1.5 text-xs font-bold focus:outline-none focus:border-indigo-500">
                     </div>
                     <div>
@@ -402,8 +470,17 @@
                             class="w-full border border-gray-300 bg-white rounded-md px-2 py-1.5 text-xs font-bold focus:outline-none focus:border-indigo-500">
                     </div>
                 </div>
+
+                <!-- 덮어쓰기 글자 점선 표시 체크박스 -->
+                <div class="bg-white border border-indigo-200 rounded-md px-2.5 py-1.5">
+                    <label class="flex items-center gap-2 text-xs font-bold text-indigo-900 cursor-pointer">
+                        <input type="checkbox" id="dottedStudentInfoMode" checked onchange="renderWorksheet()" class="rounded text-indigo-600 w-3.5 h-3.5">
+                        <span>✏️ 덮어쓰기 글자를 정자체 점선 획으로 표시</span>
+                    </label>
+                </div>
+
                 <p class="text-[11px] text-gray-500 leading-snug">
-                    비워두면 날짜란에 <strong>월, 일</strong>이 기본 표시되며, 입력 시 얇은 회색 덮어쓰기 글씨로 바뀝니다.
+                    날짜 입력 시 <strong>월, 일</strong>은 미리 제공되며 숫자만 칸 안에 덮어쓰기로 들어갑니다.
                 </p>
 
                 <!-- 날짜 / 이름 폰트 크기 조절 (기본 150%, 최대 500%) -->
@@ -421,14 +498,47 @@
                 </div>
             </div>
 
+            <!-- 오른쪽 하단 선생님 마스코트 캐릭터 선택 설정 -->
+            <div class="mt-2.5 bg-sky-50/70 border border-sky-200 rounded-lg p-2.5 space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center gap-1.5 text-xs font-bold text-sky-950 cursor-pointer">
+                        <input type="checkbox" id="showTeacherMascot" checked onchange="onTeacherMascotToggle()" class="rounded text-sky-600 w-3.5 h-3.5">
+                        <span>🧑‍🏫 오른쪽 하단 선생님 캐릭터 표시</span>
+                    </label>
+                    <label class="text-[10px] bg-white border border-sky-300 hover:bg-sky-100 text-sky-800 font-bold px-2 py-0.5 rounded cursor-pointer transition">
+                        📁 내 이미지 변경
+                        <input type="file" id="customMascotInput" accept="image/*" onchange="handleCustomMascotUpload(event)" class="hidden">
+                    </label>
+                </div>
+
+                <div id="teacherMascotOptions" class="space-y-2 pt-1 border-t border-sky-200/80">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <label class="flex items-center justify-center gap-1.5 border-2 border-sky-600 bg-white text-sky-900 rounded-lg py-1.5 text-xs font-bold cursor-pointer transition" id="mascotLabelMale">
+                            <input type="checkbox" id="mascotCheckMale" checked onchange="selectTeacherMascotGender('male')" class="rounded text-sky-600 w-3.5 h-3.5">
+                            <span>👨 남자 선생님 (기본)</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1.5 border border-sky-200 bg-white/80 text-gray-700 hover:bg-white rounded-lg py-1.5 text-xs font-bold cursor-pointer transition" id="mascotLabelFemale">
+                            <input type="checkbox" id="mascotCheckFemale" onchange="selectTeacherMascotGender('female')" class="rounded text-sky-600 w-3.5 h-3.5">
+                            <span>👩 여자 선생님</span>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-[11px] font-bold text-sky-900 whitespace-nowrap">크기:</span>
+                        <input type="range" id="mascotScale" min="50" max="160" step="10" value="100" oninput="onMascotScaleChange(this.value)" class="flex-1 accent-sky-600 cursor-pointer">
+                        <span id="mascotScaleLabel" class="text-[11px] font-bold text-sky-800 w-9 text-right">100%</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- 교사용 정답지 선택 시 활성화되는 점선 따라쓰기 옵션 -->
             <div id="dottedTraceOptionBox" class="hidden mt-2.5 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
                 <label class="flex items-center gap-2 text-xs font-bold text-emerald-900 cursor-pointer">
                     <input type="checkbox" id="dottedTraceMode" onchange="renderWorksheet()" class="rounded text-emerald-600 w-3.5 h-3.5">
-                    <span>✏️ 정답 가이드 표시 (학생 따라쓰기용 학습지)</span>
+                    <span>✏️ 정답 가이드 표시 (점선 따라쓰기용 학습지)</span>
                 </label>
                 <p class="text-[11px] text-emerald-700 mt-1 leading-snug">
-                    체크 시 배경 그림은 숨기고 빨간 네모 안에 따라 쓸 수 있는 연한 회색 숫자를 표시합니다.
+                    체크 시 배경 그림은 숨기고 빨간 네모 안에 정자체 점선 획으로 된 정답 숫자를 표시합니다.
                 </p>
             </div>
         </section>
@@ -493,14 +603,20 @@
                         </div>
                     </div>
 
-                    <!-- 숫자 그대로 표시일 때: 덮어쓰기 옵션 -->
-                    <div id="matchNumberOnlyOptions" class="border-t border-indigo-200 pt-2">
+                    <!-- 숫자 그대로 표시일 때: 덮어쓰기 및 점선 옵션 -->
+                    <div id="matchNumberOnlyOptions" class="border-t border-indigo-200 pt-2 space-y-2">
                         <label class="flex items-center gap-2 text-xs font-bold text-indigo-900 cursor-pointer">
-                            <input type="checkbox" id="matchTraceMode" onchange="renderWorksheet()" class="rounded text-indigo-600 w-3.5 h-3.5">
+                            <input type="checkbox" id="matchTraceMode" onchange="onMatchTraceToggle()" class="rounded text-indigo-600 w-3.5 h-3.5">
                             <span>✏️ 숫자 덮어쓰기 표시 (학생 따라쓰기용)</span>
                         </label>
-                        <p class="text-[11px] text-indigo-700 mt-1 leading-snug">
-                            체크 시 문제판의 숫자가 얇은 연한 회색 단일선으로 표시되어 학생들이 연필로 덧쓸 수 있습니다.
+                        <div id="dottedMatchTraceWrapper" class="hidden bg-white border border-indigo-200 rounded-md px-2.5 py-1.5">
+                            <label class="flex items-center gap-2 text-xs font-bold text-indigo-900 cursor-pointer">
+                                <input type="checkbox" id="dottedMatchTraceMode" checked onchange="renderWorksheet()" class="rounded text-indigo-600 w-3.5 h-3.5">
+                                <span>✏️ 숫자 덮어쓰기를 정자체 점선 획으로 표시</span>
+                            </label>
+                        </div>
+                        <p class="text-[11px] text-indigo-700 leading-snug">
+                            체크 시 문제판의 숫자가 얇은 정자체 점선 획(또는 연한 실선)으로 표시되어 학생들이 연필로 덧쓸 수 있습니다.
                         </p>
                     </div>
 
@@ -573,7 +689,7 @@
             </div>
 
             <!-- 사칙연산 선택 -->
-            <div class="grid grid-cols-4 gap-1.5 mb-3">
+            <div class="grid grid-cols-4 gap-1.5 mb-2.5">
                 <label class="flex items-center justify-center gap-1 border rounded-lg py-1.5 text-xs font-bold cursor-pointer bg-gray-50">
                     <input type="checkbox" class="op-check" value="+" checked onchange="onOpChange(this)"> 덧셈(+)
                 </label>
@@ -586,6 +702,20 @@
                 <label class="flex items-center justify-center gap-1 border rounded-lg py-1.5 text-xs font-bold cursor-pointer bg-gray-50">
                     <input type="checkbox" class="op-check" value="/" onchange="onOpChange(this)"> 나눗셈(÷)
                 </label>
+            </div>
+
+            <!-- 사칙연산 문제 글자 크기 조절 박스 -->
+            <div id="arithFontScaleBox" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-2.5">
+                <div class="flex items-center justify-between text-xs font-bold text-gray-800 mb-1.5">
+                    <span>🔍 사칙연산 문제 글자 크기 조절</span>
+                    <span id="arithFontScaleLabel" class="bg-indigo-600 text-white text-[11px] px-2 py-0.5 rounded-full">100%</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="adjustArithFontScale(-10)" class="w-7 h-7 bg-white border border-gray-300 hover:bg-gray-100 rounded-lg font-black text-gray-800 flex items-center justify-center shadow-xs" title="글자 축소">-</button>
+                    <input type="range" id="arithFontScale" min="60" max="180" step="10" value="100" oninput="onArithFontScaleChange(this.value)" class="flex-1 accent-indigo-600 cursor-pointer">
+                    <button type="button" onclick="adjustArithFontScale(10)" class="w-7 h-7 bg-white border border-gray-300 hover:bg-gray-100 rounded-lg font-black text-gray-800 flex items-center justify-center shadow-xs" title="글자 확대">+</button>
+                    <button type="button" onclick="onArithFontScaleChange(100)" class="text-[11px] bg-white border border-gray-200 hover:bg-gray-100 text-gray-700 px-2 py-1 rounded-lg font-bold">초기화</button>
+                </div>
             </div>
 
             <div class="flex items-center gap-2 text-xs mb-2.5">
@@ -623,11 +753,11 @@
             </div>
         </section>
 
-        <!-- 4. 퍼즐 그림 및 조각 숫자 위치 선택 -->
+        <!-- 4. 퍼즐 그림 및 조각 숫자 위치/크기 선택 -->
         <section class="mb-4 border-t pt-4">
             <h2 class="text-sm font-bold text-gray-700 mb-2">4. 퍼즐 그림 및 조각 설정</h2>
 
-            <!-- 퍼즐 조각 내 정답 숫자 위치 및 흰색 배경 원 제거 설정 (기본: 좌측 상단 + 흰색 배경 원 제거) -->
+            <!-- 퍼즐 조각 내 정답 숫자 위치, 크기 및 흰색 배경 원 제거 설정 -->
             <div class="mb-3 bg-gray-50 border border-gray-200 rounded-lg p-2.5 space-y-2.5">
                 <div>
                     <div class="flex items-center justify-between mb-1.5">
@@ -644,6 +774,20 @@
                         <button type="button" onclick="setBadgePosition('bottom-right')" class="badge-pos-btn border border-gray-300 bg-white hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold text-gray-700 transition" data-pos="bottom-right">
                             ↘️ 우측 하단
                         </button>
+                    </div>
+                </div>
+
+                <!-- 퍼즐 격자(조각) 내 숫자 크기 조절 -->
+                <div class="border-t border-gray-200 pt-2">
+                    <div class="flex items-center justify-between text-xs font-bold text-gray-800 mb-1.5">
+                        <span>🔍 퍼즐 조각 내 숫자 크기 조절</span>
+                        <span id="badgeFontScaleLabel" class="bg-indigo-600 text-white text-[11px] px-2 py-0.5 rounded-full">100%</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" onclick="adjustBadgeFontScale(-10)" class="w-7 h-7 bg-white border border-gray-300 hover:bg-gray-100 rounded-lg font-black text-gray-800 flex items-center justify-center shadow-xs" title="숫자 축소">-</button>
+                        <input type="range" id="badgeFontScale" min="60" max="200" step="10" value="100" oninput="onBadgeFontScaleChange(this.value)" class="flex-1 accent-indigo-600 cursor-pointer">
+                        <button type="button" onclick="adjustBadgeFontScale(10)" class="w-7 h-7 bg-white border border-gray-300 hover:bg-gray-100 rounded-lg font-black text-gray-800 flex items-center justify-center shadow-xs" title="숫자 확대">+</button>
+                        <button type="button" onclick="onBadgeFontScaleChange(100)" class="text-[11px] bg-white border border-gray-200 hover:bg-gray-100 text-gray-700 px-2 py-1 rounded-lg font-bold">초기화</button>
                     </div>
                 </div>
 
@@ -807,6 +951,22 @@
             { id: 'house', label: '🏠 빨간 지붕 집', hover: 'hover:bg-lime-50' }
         ];
 
+        // 메인 제목 어절별 다채로운 컬러 팔레트
+        const TITLE_WORD_COLORS = [
+            '#ef4444', // 코랄 레드
+            '#f97316', // 오렌지
+            '#10b981', // 에메랄드 그린
+            '#3b82f6', // 로열 블루
+            '#8b5cf6', // 바이올렛
+            '#ec4899'  // 핑크
+        ];
+
+        // 생성한 원본 이미지 파일 경로
+        const GENERATED_MASCOT_FILES = {
+            male: './Gemini_Generated_Image_zblsduzblsduzbls.png',
+            female: './Gemini_Generated_Image_yjcv2syjcv2syjcv.png'
+        };
+
         let state = {
             cols: 4,
             rows: 4,
@@ -817,9 +977,11 @@
             imageNaturalHeight: 1200,
             badgePosition: 'top-left', // 기본값: 좌측 상단 ('top-left' | 'center' | 'bottom-right')
             matchDisplayType: 'number', // 'number' | 'concrete'
-            emojiCategory: 'fruit', // 'fruit' | 'animal' | 'snack' | 'food' | 'transport' | 'shape'
+            emojiCategory: 'fruit',
             selectedEmoji: '🍎',
-            selectedSampleId: 'rocket'
+            selectedSampleId: 'rocket',
+            teacherMascotGender: 'male',
+            customMascotDataUrl: null
         };
 
         window.onload = () => {
@@ -828,6 +990,556 @@
             useBuiltInSample('rocket');
             regenerateProblems();
         };
+
+        // =========================================================================
+        // 정자체 단일 획 점선(Single-Stroke Dashed) SVG 렌더링 엔진
+        // 제시된 이미지('하나, 둘, 셋, 넷, 다섯' 및 '1, 2, 3, 4, 5')와 동일하게
+        // 글자 중심선 획 자체가 가느다란 점선 한 줄로 그려지도록 구현
+        // =========================================================================
+        const DIGIT_STROKES = {
+            '0': ['M 50 10 C 74 10 82 30 82 50 C 82 70 74 90 50 90 C 26 90 18 70 18 50 C 18 30 26 10 50 10'],
+            '1': ['M 30 24 L 54 10 L 54 90'],
+            '2': ['M 24 28 C 24 14 40 10 52 10 C 68 10 78 20 78 34 C 78 52 44 68 22 90 L 80 90'],
+            '3': ['M 24 22 C 30 12 42 10 52 10 C 66 10 76 18 76 30 C 76 42 64 48 48 48', 'M 48 48 C 66 48 78 56 78 70 C 78 82 66 90 50 90 C 36 90 26 84 22 76'],
+            '4': ['M 64 90 L 64 10 L 18 66 L 84 66'],
+            '5': ['M 74 10 L 28 10 L 24 44 C 32 38 42 36 52 36 C 68 36 80 48 80 64 C 80 80 66 90 48 90 C 34 90 24 84 20 76'],
+            '6': ['M 72 18 C 66 12 58 10 50 10 C 30 10 20 30 20 56 C 20 78 32 90 52 90 C 70 90 80 78 80 62 C 80 46 68 38 52 38 C 36 38 24 46 20 58'],
+            '7': ['M 20 10 L 80 10 L 42 90'],
+            '8': ['M 50 48 C 34 48 24 40 24 28 C 24 16 36 10 50 10 C 64 10 76 16 76 28 C 76 40 66 48 50 48 C 32 48 20 58 20 72 C 20 84 34 90 50 90 C 66 90 80 84 80 72 C 80 58 68 48 50 48'],
+            '9': ['M 80 42 C 76 54 64 62 48 62 C 32 62 20 52 20 36 C 20 20 32 10 50 10 C 68 10 80 22 80 44 C 80 70 68 90 48 90 C 38 90 30 86 24 80'],
+            '-': ['M 24 50 L 76 50'],
+            '+': ['M 50 22 L 50 78', 'M 22 50 L 78 50'],
+            '.': ['M 48 86 L 52 86'],
+            '/': ['M 72 12 L 28 88']
+        };
+
+        const CHO_LIST = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+        const JUNG_LIST = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+        const JONG_LIST = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+
+        // 좌표 변환 헬퍼: 정규화된 (0~100) 좌표를 목표 박스 (x, y, w, h)로 사상
+        function mapCoord(pt, box) {
+            return `${+(box.x + (pt[0] / 100) * box.w).toFixed(1)} ${+(box.y + (pt[1] / 100) * box.h).toFixed(1)}`;
+        }
+
+        function buildConsonantPaths(jamo, box) {
+            const p = (x, y) => mapCoord([x, y], box);
+            switch (jamo) {
+                case 'ㄱ':
+                    return [`M ${p(14, 16)} L ${p(86, 16)} L ${p(86, 88)}`];
+                case 'ㄲ':
+                    return [
+                        `M ${p(8, 16)} L ${p(44, 16)} L ${p(44, 88)}`,
+                        `M ${p(56, 16)} L ${p(92, 16)} L ${p(92, 88)}`
+                    ];
+                case 'ㄴ':
+                    return [`M ${p(18, 14)} L ${p(18, 86)} L ${p(88, 86)}`];
+                case 'ㄷ':
+                    return [
+                        `M ${p(18, 16)} L ${p(86, 16)}`,
+                        `M ${p(18, 16)} L ${p(18, 86)} L ${p(88, 86)}`
+                    ];
+                case 'ㄸ':
+                    return [
+                        `M ${p(8, 16)} L ${p(44, 16)}`,
+                        `M ${p(8, 16)} L ${p(8, 86)} L ${p(46, 86)}`,
+                        `M ${p(54, 16)} L ${p(90, 16)}`,
+                        `M ${p(54, 16)} L ${p(54, 86)} L ${p(92, 86)}`
+                    ];
+                case 'ㄹ':
+                    return [
+                        `M ${p(16, 14)} L ${p(84, 14)} L ${p(84, 50)} L ${p(16, 50)} L ${p(16, 86)} L ${p(86, 86)}`
+                    ];
+                case 'ㅁ':
+                    return [
+                        `M ${p(18, 16)} L ${p(82, 16)} L ${p(82, 86)} L ${p(18, 86)} Z`
+                    ];
+                case 'ㅂ':
+                    return [
+                        `M ${p(20, 14)} L ${p(20, 86)}`,
+                        `M ${p(80, 14)} L ${p(80, 86)}`,
+                        `M ${p(20, 50)} L ${p(80, 50)}`,
+                        `M ${p(20, 86)} L ${p(80, 86)}`
+                    ];
+                case 'ㅃ':
+                    return [
+                        `M ${p(10, 14)} L ${p(10, 86)}`,
+                        `M ${p(42, 14)} L ${p(42, 86)}`,
+                        `M ${p(10, 50)} L ${p(42, 50)}`,
+                        `M ${p(10, 86)} L ${p(42, 86)}`,
+                        `M ${p(58, 14)} L ${p(58, 86)}`,
+                        `M ${p(90, 14)} L ${p(90, 86)}`,
+                        `M ${p(58, 50)} L ${p(90, 50)}`,
+                        `M ${p(58, 86)} L ${p(90, 86)}`
+                    ];
+                case 'ㅅ':
+                    return [
+                        `M ${p(50, 14)} C ${p(48, 48)} ${p(32, 72)} ${p(12, 88)}`,
+                        `M ${p(46, 52)} C ${p(58, 68)} ${p(72, 80)} ${p(88, 88)}`
+                    ];
+                case 'ㅆ':
+                    return [
+                        `M ${p(28, 14)} C ${p(26, 48)} ${p(16, 72)} ${p(6, 88)}`,
+                        `M ${p(25, 52)} C ${p(32, 68)} ${p(40, 80)} ${p(48, 88)}`,
+                        `M ${p(72, 14)} C ${p(70, 48)} ${p(60, 72)} ${p(50, 88)}`,
+                        `M ${p(69, 52)} C ${p(76, 68)} ${p(84, 80)} ${p(94, 88)}`
+                    ];
+                case 'ㅇ': {
+                    const cx = +(box.x + box.w * 0.5).toFixed(1);
+                    const cy = +(box.y + box.h * 0.5).toFixed(1);
+                    const rx = +(box.w * 0.36).toFixed(1);
+                    const ry = +(box.h * 0.38).toFixed(1);
+                    return [`M ${cx - rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx + rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx - rx} ${cy}`];
+                }
+                case 'ㅈ':
+                    return [
+                        `M ${p(14, 18)} L ${p(86, 18)}`,
+                        `M ${p(50, 18)} C ${p(46, 50)} ${p(30, 72)} ${p(12, 88)}`,
+                        `M ${p(48, 52)} C ${p(60, 68)} ${p(74, 80)} ${p(88, 88)}`
+                    ];
+                case 'ㅉ':
+                    return [
+                        `M ${p(8, 18)} L ${p(44, 18)}`,
+                        `M ${p(26, 18)} C ${p(24, 50)} ${p(14, 72)} ${p(6, 88)}`,
+                        `M ${p(25, 52)} C ${p(32, 68)} ${p(40, 80)} ${p(46, 88)}`,
+                        `M ${p(56, 18)} L ${p(92, 18)}`,
+                        `M ${p(74, 18)} C ${p(72, 50)} ${p(62, 72)} ${p(54, 88)}`,
+                        `M ${p(73, 52)} C ${p(80, 68)} ${p(88, 80)} ${p(94, 88)}`
+                    ];
+                case 'ㅊ':
+                    return [
+                        `M ${p(50, 6)} L ${p(50, 22)}`,
+                        `M ${p(14, 26)} L ${p(86, 26)}`,
+                        `M ${p(50, 26)} C ${p(46, 54)} ${p(30, 74)} ${p(12, 88)}`,
+                        `M ${p(48, 56)} C ${p(60, 70)} ${p(74, 80)} ${p(88, 88)}`
+                    ];
+                case 'ㅋ':
+                    return [
+                        `M ${p(14, 16)} L ${p(86, 16)} L ${p(86, 88)}`,
+                        `M ${p(18, 50)} L ${p(86, 50)}`
+                    ];
+                case 'ㅌ':
+                    return [
+                        `M ${p(18, 16)} L ${p(86, 16)}`,
+                        `M ${p(18, 50)} L ${p(82, 50)}`,
+                        `M ${p(18, 16)} L ${p(18, 86)} L ${p(88, 86)}`
+                    ];
+                case 'ㅍ':
+                    return [
+                        `M ${p(12, 18)} L ${p(88, 18)}`,
+                        `M ${p(32, 18)} L ${p(32, 84)}`,
+                        `M ${p(68, 18)} L ${p(68, 84)}`,
+                        `M ${p(12, 84)} L ${p(88, 84)}`
+                    ];
+                case 'ㅎ': {
+                    const cx = +(box.x + box.w * 0.5).toFixed(1);
+                    const cy = +(box.y + box.h * 0.66).toFixed(1);
+                    const rx = +(box.w * 0.32).toFixed(1);
+                    const ry = +(box.h * 0.25).toFixed(1);
+                    return [
+                        `M ${p(50, 6)} L ${p(50, 22)}`,
+                        `M ${p(10, 28)} L ${p(90, 28)}`,
+                        `M ${cx - rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx + rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx - rx} ${cy}`
+                    ];
+                }
+                default:
+                    return buildConsonantPaths('ㅇ', box);
+            }
+        }
+
+        function buildComplexJongPaths(jong, box) {
+            const leftBox = { x: box.x, y: box.y, w: box.w * 0.46, h: box.h };
+            const rightBox = { x: box.x + box.w * 0.54, y: box.y, w: box.w * 0.46, h: box.h };
+            const map = {
+                'ㄳ': ['ㄱ', 'ㅅ'],
+                'ㄵ': ['ㄴ', 'ㅈ'],
+                'ㄶ': ['ㄴ', 'ㅎ'],
+                'ㄺ': ['ㄹ', 'ㄱ'],
+                'ㄻ': ['ㄹ', 'ㅁ'],
+                'ㄼ': ['ㄹ', 'ㅂ'],
+                'ㄽ': ['ㄹ', 'ㅅ'],
+                'ㄾ': ['ㄹ', 'ㅌ'],
+                'ㄿ': ['ㄹ', 'ㅍ'],
+                'ㅀ': ['ㄹ', 'ㅎ'],
+                'ㅄ': ['ㅂ', 'ㅅ']
+            };
+            if (map[jong]) {
+                return [
+                    ...buildConsonantPaths(map[jong][0], leftBox),
+                    ...buildConsonantPaths(map[jong][1], rightBox)
+                ];
+            }
+            return buildConsonantPaths(jong, box);
+        }
+
+        function buildVowelPaths(jung, vBox, bBox) {
+            const vp = (x, y) => mapCoord([x, y], vBox);
+            const bp = (x, y) => mapCoord([x, y], bBox);
+            switch (jung) {
+                case 'ㅏ':
+                    return [`M ${vp(34, 6)} L ${vp(34, 94)}`, `M ${vp(34, 50)} L ${vp(88, 50)}`];
+                case 'ㅐ':
+                    return [`M ${vp(24, 6)} L ${vp(24, 94)}`, `M ${vp(24, 50)} L ${vp(74, 50)}`, `M ${vp(74, 6)} L ${vp(74, 94)}`];
+                case 'ㅑ':
+                    return [`M ${vp(34, 6)} L ${vp(34, 94)}`, `M ${vp(34, 36)} L ${vp(88, 36)}`, `M ${vp(34, 64)} L ${vp(88, 64)}`];
+                case 'ㅒ':
+                    return [`M ${vp(24, 6)} L ${vp(24, 94)}`, `M ${vp(24, 36)} L ${vp(74, 36)}`, `M ${vp(24, 64)} L ${vp(74, 64)}`, `M ${vp(74, 6)} L ${vp(74, 94)}`];
+                case 'ㅓ':
+                    return [`M ${vp(70, 6)} L ${vp(70, 94)}`, `M ${vp(16, 50)} L ${vp(70, 50)}`];
+                case 'ㅔ':
+                    return [`M ${vp(54, 6)} L ${vp(54, 94)}`, `M ${vp(12, 50)} L ${vp(54, 50)}`, `M ${vp(84, 6)} L ${vp(84, 94)}`];
+                case 'ㅕ':
+                    return [`M ${vp(70, 6)} L ${vp(70, 94)}`, `M ${vp(16, 36)} L ${vp(70, 36)}`, `M ${vp(16, 64)} L ${vp(70, 64)}`];
+                case 'ㅖ':
+                    return [`M ${vp(54, 6)} L ${vp(54, 94)}`, `M ${vp(12, 36)} L ${vp(54, 36)}`, `M ${vp(12, 64)} L ${vp(54, 64)}`, `M ${vp(84, 6)} L ${vp(84, 94)}`];
+                case 'ㅣ':
+                    return [`M ${vp(50, 6)} L ${vp(50, 94)}`];
+                case 'ㅗ':
+                    return [`M ${bp(50, 14)} L ${bp(50, 74)}`, `M ${bp(6, 74)} L ${bp(94, 74)}`];
+                case 'ㅛ':
+                    return [`M ${bp(34, 14)} L ${bp(34, 74)}`, `M ${bp(66, 14)} L ${bp(66, 74)}`, `M ${bp(6, 74)} L ${bp(94, 74)}`];
+                case 'ㅜ':
+                    return [`M ${bp(6, 26)} L ${bp(94, 26)}`, `M ${bp(50, 26)} L ${bp(50, 88)}`];
+                case 'ㅠ':
+                    return [`M ${bp(6, 26)} L ${bp(94, 26)}`, `M ${bp(34, 26)} L ${bp(34, 88)}`, `M ${bp(66, 26)} L ${bp(66, 88)}`];
+                case 'ㅡ':
+                    return [`M ${bp(6, 52)} L ${bp(94, 52)}`];
+                case 'ㅘ':
+                    return [`M ${bp(45, 16)} L ${bp(45, 76)}`, `M ${bp(6, 76)} L ${bp(84, 76)}`, `M ${vp(46, 6)} L ${vp(46, 94)}`, `M ${vp(46, 50)} L ${vp(92, 50)}`];
+                case 'ㅙ':
+                    return [`M ${bp(42, 16)} L ${bp(42, 76)}`, `M ${bp(6, 76)} L ${bp(76, 76)}`, `M ${vp(32, 6)} L ${vp(32, 94)}`, `M ${vp(32, 50)} L ${vp(78, 50)}`, `M ${vp(78, 6)} L ${vp(78, 94)}`];
+                case 'ㅚ':
+                    return [`M ${bp(45, 16)} L ${bp(45, 76)}`, `M ${bp(6, 76)} L ${bp(84, 76)}`, `M ${vp(56, 6)} L ${vp(56, 94)}`];
+                case 'ㅝ':
+                    return [`M ${bp(6, 26)} L ${bp(84, 26)}`, `M ${bp(44, 26)} L ${bp(44, 86)}`, `M ${vp(68, 6)} L ${vp(68, 94)}`, `M ${vp(26, 50)} L ${vp(68, 50)}`];
+                case 'ㅞ':
+                    return [`M ${bp(6, 26)} L ${bp(78, 26)}`, `M ${bp(40, 26)} L ${bp(40, 86)}`, `M ${vp(52, 6)} L ${vp(52, 94)}`, `M ${vp(18, 50)} L ${vp(52, 50)}`, `M ${vp(84, 6)} L ${vp(84, 94)}`];
+                case 'ㅟ':
+                    return [`M ${bp(6, 26)} L ${bp(84, 26)}`, `M ${bp(44, 26)} L ${bp(44, 86)}`, `M ${vp(58, 6)} L ${vp(58, 94)}`];
+                case 'ㅢ':
+                    return [`M ${bp(6, 54)} L ${bp(84, 54)}`, `M ${vp(58, 6)} L ${vp(58, 94)}`];
+                default:
+                    return [];
+            }
+        }
+
+        function buildHangulSyllablePaths(ch) {
+            const code = ch.charCodeAt(0) - 0xAC00;
+            const cho = CHO_LIST[Math.floor(code / 588)];
+            const jung = JUNG_LIST[Math.floor((code % 588) / 28)];
+            const jong = JONG_LIST[code % 28];
+            const hasJong = jong !== '';
+
+            const horizVowels = ['ㅗ', 'ㅛ', 'ㅜ', 'ㅠ', 'ㅡ'];
+            const vertVowels = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅣ'];
+
+            const topH = hasJong ? 58 : 88;
+            const topY = hasJong ? 6 : 6;
+            const paths = [];
+
+            if (vertVowels.includes(jung)) {
+                const choBox = { x: 8, y: topY + 4, w: 46, h: topH - 8 };
+                const jungVBox = { x: 58, y: topY, w: 34, h: topH };
+                paths.push(...buildConsonantPaths(cho, choBox));
+                paths.push(...buildVowelPaths(jung, jungVBox, { x: 0, y: 0, w: 0, h: 0 }));
+            } else if (horizVowels.includes(jung)) {
+                const choBox = { x: 16, y: topY, w: 68, h: topH * 0.56 };
+                const jungBBox = { x: 8, y: topY + topH * 0.56, w: 84, h: topH * 0.44 };
+                paths.push(...buildConsonantPaths(cho, choBox));
+                paths.push(...buildVowelPaths(jung, { x: 0, y: 0, w: 0, h: 0 }, jungBBox));
+            } else {
+                // 복합 모음 (ㅘ, ㅝ, ㅢ 등)
+                const choBox = { x: 10, y: topY, w: 48, h: topH * 0.54 };
+                const jungBBox = { x: 6, y: topY + topH * 0.54, w: 66, h: topH * 0.46 };
+                const jungVBox = { x: 62, y: topY, w: 32, h: topH };
+                paths.push(...buildConsonantPaths(cho, choBox));
+                paths.push(...buildVowelPaths(jung, jungVBox, jungBBox));
+            }
+
+            if (hasJong) {
+                const jongBox = { x: 16, y: 67, w: 68, h: 27 };
+                paths.push(...buildComplexJongPaths(jong, jongBox));
+            }
+
+            return paths;
+        }
+
+        function getSingleStrokeCharPaths(ch) {
+            if (DIGIT_STROKES[ch]) {
+                return { paths: DIGIT_STROKES[ch], widthRatio: 0.62 };
+            }
+            const code = ch.charCodeAt(0);
+            if (code >= 0xAC00 && code <= 0xD7A3) {
+                return { paths: buildHangulSyllablePaths(ch), widthRatio: 0.96 };
+            }
+            if (CHO_LIST.includes(ch)) {
+                return { paths: buildConsonantPaths(ch, { x: 14, y: 14, w: 72, h: 72 }), widthRatio: 0.85 };
+            }
+            if (JUNG_LIST.includes(ch)) {
+                return { paths: buildVowelPaths(ch, { x: 20, y: 10, w: 60, h: 80 }, { x: 10, y: 20, w: 80, h: 60 }), widthRatio: 0.85 };
+            }
+            return null;
+        }
+
+        // 모든 덮어쓰기 텍스트를 이미지와 동일한 단일 획 점선(또는 단일 실선) 정자체 SVG로 렌더링
+        function renderTraceableTextHtml(text, fontPx, isDotted, extraClass = 'info-trace-text') {
+            const safeText = escapeHtml(text);
+            if (!text) return '';
+
+            const charList = Array.from(text);
+            const isLarge = fontPx >= 26;
+            const charGap = Math.max(2, Math.round(fontPx * 0.08));
+            const heightPx = Math.ceil(fontPx * 1.15);
+
+            // 이미지와 동일한 가느다란 단일 획 두께 및 짧은 점선 간격 설정
+            const strokeWidth = isLarge
+                ? Math.max(1.6, +(fontPx * 0.042).toFixed(2))
+                : Math.max(1.3, +(fontPx * 0.055).toFixed(2));
+            const dashOn = +(strokeWidth * 2.1).toFixed(2);
+            const dashOff = +(strokeWidth * 2.2).toFixed(2);
+            const strokeDashAttr = isDotted ? `stroke-dasharray="${dashOn} ${dashOff}"` : '';
+            const strokeColor = isLarge ? '#9ca3af' : '#8c96a4';
+
+            let cursorX = 2;
+            const groupElements = [];
+            let allSupported = true;
+
+            for (const ch of charList) {
+                if (ch === ' ') {
+                    cursorX += fontPx * 0.42;
+                    continue;
+                }
+                const glyph = getSingleStrokeCharPaths(ch);
+                if (!glyph) {
+                    allSupported = false;
+                    break;
+                }
+                const charW = fontPx * glyph.widthRatio;
+                const scaleX = charW / 100;
+                const scaleY = fontPx / 100;
+                const offsetY = (heightPx - fontPx) / 2;
+
+                const pathTags = glyph.paths.map(d =>
+                    `<path d="${d}" fill="none" stroke="${strokeColor}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" ${strokeDashAttr}/>`
+                ).join('');
+
+                groupElements.push(`<g transform="translate(${cursorX.toFixed(1)}, ${offsetY.toFixed(1)}) scale(${scaleX.toFixed(4)}, ${scaleY.toFixed(4)})">${pathTags}</g>`);
+                cursorX += charW + charGap;
+            }
+
+            if (allSupported && groupElements.length > 0) {
+                const totalW = Math.max(16, Math.ceil(cursorX - charGap + 2));
+                return `
+                    <span class="${extraClass}" style="line-height: 1;">
+                        <svg width="${totalW}" height="${heightPx}" viewBox="0 0 ${totalW} ${heightPx}" style="display: inline-block; vertical-align: middle; overflow: visible;">
+                            ${groupElements.join('')}
+                        </svg>
+                    </span>
+                `;
+            }
+
+            // 영문 등 미지원 특수문자가 섞인 경우를 위한 안전 폴백
+            return `<span class="${extraClass}">${safeText}</span>`;
+        }
+
+        // 이미지 파일을 찾을 수 없을 때만 동작하는 내장 벡터 폴백
+        function getFallbackTeacherSvg(gender) {
+            const richEducationalBgSvg = `
+                <g transform="translate(34, 42) rotate(-10)">
+                    <circle cx="0" cy="0" r="19" fill="#fef9c3" stroke="#232852" stroke-width="2.6"/>
+                    <circle cx="0" cy="0" r="14.5" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+                    <line x1="0" y1="0" x2="0" y2="-9" stroke="#ef4444" stroke-width="2.4" stroke-linecap="round"/>
+                    <line x1="0" y1="0" x2="7.5" y2="3" stroke="#232852" stroke-width="2.4" stroke-linecap="round"/>
+                    <circle cx="0" cy="0" r="2.2" fill="#232852"/>
+                </g>
+                <g transform="translate(22, 102) rotate(-14)">
+                    <rect x="-11" y="-3.5" width="22" height="7" rx="3.5" fill="#ef4444" stroke="#232852" stroke-width="2.2"/>
+                    <rect x="-3.5" y="-11" width="7" height="22" rx="3.5" fill="#ef4444" stroke="#232852" stroke-width="2.2"/>
+                </g>
+                <rect x="44" y="75" width="14" height="14" rx="2.5" fill="#c084fc" stroke="#232852" stroke-width="2.2" transform="rotate(15 51 82)"/>
+                <g transform="translate(30, 152) rotate(-12)">
+                    <rect x="-20" y="-11" width="38" height="22" rx="3.5" fill="#86efac" stroke="#232852" stroke-width="2.4"/>
+                    <circle cx="-1" cy="0" r="5.5" fill="#bbf7d0" stroke="#232852" stroke-width="1.8"/>
+                    <text x="-1" y="2.8" text-anchor="middle" font-size="8" font-weight="900" fill="#15803d">₩</text>
+                    <circle cx="15" cy="8" r="8.5" fill="#facc15" stroke="#232852" stroke-width="2.2"/>
+                    <text x="15" y="11" text-anchor="middle" font-size="8.5" font-weight="900" fill="#92400e">100</text>
+                </g>
+                <text x="202" y="46" font-family="'Jua', 'NanumSquareRound', sans-serif" font-size="27" font-weight="900"
+                    fill="#facc15" stroke="#232852" stroke-width="2.6" paint-order="stroke fill" transform="rotate(8 202 36)">3</text>
+                <circle cx="176" cy="30" r="8" fill="#f472b6" stroke="#232852" stroke-width="2.2"/>
+                <g transform="translate(212, 82) rotate(12)">
+                    <polygon points="0,-13 -13,10 13,10" fill="#60a5fa" stroke="#232852" stroke-width="2.5" stroke-linejoin="round"/>
+                </g>
+                <g transform="translate(208, 146) rotate(10)">
+                    <rect x="-16" y="-21" width="32" height="42" rx="5" fill="#e2e8f0" stroke="#232852" stroke-width="2.5"/>
+                    <rect x="-11" y="-16" width="22" height="9" rx="2" fill="#bae6fd" stroke="#232852" stroke-width="1.8"/>
+                    <circle cx="-7" cy="-1" r="2.2" fill="#232852"/>
+                    <circle cx="0" cy="-1" r="2.2" fill="#232852"/>
+                    <circle cx="7" cy="-1" r="2.2" fill="#232852"/>
+                    <circle cx="-7" cy="6" r="2.2" fill="#232852"/>
+                    <circle cx="0" cy="6" r="2.2" fill="#232852"/>
+                    <circle cx="7" cy="6" r="2.2" fill="#ef4444"/>
+                    <circle cx="-7" cy="13" r="2.2" fill="#232852"/>
+                    <circle cx="0" cy="13" r="2.2" fill="#232852"/>
+                    <circle cx="7" cy="13" r="2.2" fill="#22c55e"/>
+                </g>
+            `;
+
+            if (gender === 'female') {
+                return `
+                    <svg viewBox="0 0 245 220" xmlns="http://www.w3.org/2000/svg">
+                        ${richEducationalBgSvg}
+                        <path d="M 76 80 C 66 42, 174 42, 164 80 C 174 112, 178 148, 168 176 C 162 184, 152 178, 150 168 L 90 168 C 88 178, 78 184, 72 176 C 62 148, 66 112, 76 80 Z"
+                            fill="#6b442a" stroke="#232852" stroke-width="3.4" stroke-linejoin="round"/>
+                        <circle cx="83" cy="95" r="7.5" fill="#fde0cc" stroke="#232852" stroke-width="3"/>
+                        <circle cx="157" cy="95" r="7.5" fill="#fde0cc" stroke="#232852" stroke-width="3"/>
+                        <path d="M 73 198 C 69 164, 77 135, 98 130 L 142 130 C 163 135, 171 164, 167 198 Z"
+                            fill="#2589f5" stroke="#232852" stroke-width="3.5" stroke-linejoin="round"/>
+                        <path d="M 84 156 L 81 196" stroke="#232852" stroke-width="3.2" stroke-linecap="round"/>
+                        <path d="M 156 156 L 159 196" stroke="#232852" stroke-width="3.2" stroke-linecap="round"/>
+                        <polygon points="100,130 140,130 120,162" fill="#fde047" stroke="#232852" stroke-width="3.2" stroke-linejoin="round"/>
+                        <polyline points="100,130 109,144 120,137 131,144 140,130" fill="#fef08a" stroke="#232852" stroke-width="2.8" stroke-linejoin="round"/>
+                        <line x1="120" y1="137" x2="120" y2="198" stroke="#232852" stroke-width="3.2"/>
+                        <circle cx="141" cy="162" r="13.5" fill="#ef4444" stroke="#232852" stroke-width="3"/>
+                        <polygon points="141,152.5 143.8,158.2 150,159.1 145.5,163.5 146.6,169.7 141,166.8 135.4,169.7 136.5,163.5 132,159.1 138.2,158.2"
+                            fill="#facc15" stroke="#232852" stroke-width="2" stroke-linejoin="round"/>
+                        <path d="M 86 64 C 86 48, 154 48, 154 64 L 154 96 C 154 118, 136 130, 120 130 C 104 130, 86 118, 86 96 Z"
+                            fill="#fde0cc" stroke="#232852" stroke-width="3.5" stroke-linejoin="round"/>
+                        <ellipse cx="103" cy="92" rx="5.5" ry="6.8" fill="#232852"/>
+                        <circle cx="101" cy="89.5" r="2.3" fill="#ffffff"/>
+                        <ellipse cx="137" cy="92" rx="5.5" ry="6.8" fill="#232852"/>
+                        <circle cx="135" cy="89.5" r="2.3" fill="#ffffff"/>
+                        <path d="M 112 108 Q 120 119 128 108 Z" fill="#f43f5e" stroke="#232852" stroke-width="2.6" stroke-linejoin="round"/>
+                        <path d="M 82 96 C 80 54, 102 45, 120 45 C 138 45, 160 54, 158 96 C 154 78, 144 68, 128 63 C 122 72, 110 76, 94 74 C 88 80, 85 88, 82 96 Z"
+                            fill="#6b442a" stroke="#232852" stroke-width="3.4" stroke-linejoin="round"/>
+                    </svg>
+                `;
+            }
+
+            return `
+                <svg viewBox="0 0 245 220" xmlns="http://www.w3.org/2000/svg">
+                    ${richEducationalBgSvg}
+                    <circle cx="84" cy="95" r="8" fill="#fbd2b9" stroke="#232852" stroke-width="3.2"/>
+                    <circle cx="158" cy="95" r="8" fill="#fbd2b9" stroke="#232852" stroke-width="3.2"/>
+                    <path d="M 73 198 C 68 164, 77 134, 98 130 L 144 130 C 165 134, 174 164, 169 198 Z"
+                        fill="#2589f5" stroke="#232852" stroke-width="3.5" stroke-linejoin="round"/>
+                    <polygon points="100,130 142,130 121,163" fill="#fde047" stroke="#232852" stroke-width="3.2" stroke-linejoin="round"/>
+                    <circle cx="143" cy="163" r="14" fill="#ef4444" stroke="#232852" stroke-width="3"/>
+                    <polygon points="143,153 145.9,158.9 152.4,159.8 147.7,164.4 148.8,170.8 143,167.8 137.2,170.8 138.3,164.4 133.6,159.8 140.1,158.9"
+                        fill="#facc15" stroke="#232852" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M 87 64 C 87 48, 155 48, 155 64 L 155 96 C 155 118, 137 130, 121 130 C 105 130, 87 118, 87 96 Z"
+                        fill="#fbd2b9" stroke="#232852" stroke-width="3.5" stroke-linejoin="round"/>
+                    <ellipse cx="104.5" cy="91" rx="3.9" ry="4.9" fill="#232852"/>
+                    <ellipse cx="137.5" cy="91" rx="3.9" ry="4.9" fill="#232852"/>
+                    <circle cx="104.5" cy="91.5" r="13" fill="none" stroke="#232852" stroke-width="3"/>
+                    <circle cx="137.5" cy="91.5" r="13" fill="none" stroke="#232852" stroke-width="3"/>
+                    <path d="M 117.5 90.5 Q 121 88 124.5 90.5" fill="none" stroke="#232852" stroke-width="2.8"/>
+                    <path d="M 113 108 Q 121 119 129 108 Z" fill="#ef4444" stroke="#232852" stroke-width="2.8" stroke-linejoin="round"/>
+                    <path d="M 87 83 C 83 58, 91 39, 105 31 C 106 37, 110 39, 115 34 C 117 40, 123 42, 134 41 C 152 42, 160 58, 155 83 C 152 67, 143 61, 129 61 C 115 61, 101 61, 95 55 C 90 61, 88 71, 87 83 Z"
+                        fill="#6b442a" stroke="#232852" stroke-width="3.5" stroke-linejoin="round"/>
+                </svg>
+            `;
+        }
+
+        function handleMascotImgError(imgEl, gender) {
+            if (!imgEl || !imgEl.parentElement) return;
+            imgEl.parentElement.innerHTML = getFallbackTeacherSvg(gender);
+        }
+
+        // 생성한 이미지 파일을 변화없이 그대로 삽입하는 마스코트 렌더링 함수
+        function getTeacherMascotInnerHtml() {
+            if (state.teacherMascotGender === 'custom' && state.customMascotDataUrl) {
+                return `<img src="${state.customMascotDataUrl}" alt="선생님 캐릭터">`;
+            }
+
+            const gender = state.teacherMascotGender === 'female' ? 'female' : 'male';
+            const imgSrc = GENERATED_MASCOT_FILES[gender];
+            const altText = gender === 'female' ? '여자 선생님 캐릭터' : '남자 선생님 캐릭터';
+
+            return `<img src="${imgSrc}" alt="${altText}" onerror="handleMascotImgError(this, '${gender}')">`;
+        }
+
+        function onTeacherMascotToggle() {
+            const checked = document.getElementById('showTeacherMascot').checked;
+            const opts = document.getElementById('teacherMascotOptions');
+            if (checked) {
+                opts.classList.remove('hidden');
+            } else {
+                opts.classList.add('hidden');
+            }
+            renderWorksheet();
+        }
+
+        function selectTeacherMascotGender(gender) {
+            state.teacherMascotGender = gender;
+            const maleCheck = document.getElementById('mascotCheckMale');
+            const femaleCheck = document.getElementById('mascotCheckFemale');
+            const maleLabel = document.getElementById('mascotLabelMale');
+            const femaleLabel = document.getElementById('mascotLabelFemale');
+
+            maleCheck.checked = (gender === 'male');
+            femaleCheck.checked = (gender === 'female');
+
+            if (gender === 'male') {
+                maleLabel.className = 'flex items-center justify-center gap-1.5 border-2 border-sky-600 bg-white text-sky-900 rounded-lg py-1.5 text-xs font-bold cursor-pointer transition';
+                femaleLabel.className = 'flex items-center justify-center gap-1.5 border border-sky-200 bg-white/80 text-gray-700 hover:bg-white rounded-lg py-1.5 text-xs font-bold cursor-pointer transition';
+            } else if (gender === 'female') {
+                femaleLabel.className = 'flex items-center justify-center gap-1.5 border-2 border-sky-600 bg-white text-sky-900 rounded-lg py-1.5 text-xs font-bold cursor-pointer transition';
+                maleLabel.className = 'flex items-center justify-center gap-1.5 border border-sky-200 bg-white/80 text-gray-700 hover:bg-white rounded-lg py-1.5 text-xs font-bold cursor-pointer transition';
+            } else {
+                maleLabel.className = 'flex items-center justify-center gap-1.5 border border-sky-200 bg-white/80 text-gray-700 hover:bg-white rounded-lg py-1.5 text-xs font-bold cursor-pointer transition';
+                femaleLabel.className = 'flex items-center justify-center gap-1.5 border border-sky-200 bg-white/80 text-gray-700 hover:bg-white rounded-lg py-1.5 text-xs font-bold cursor-pointer transition';
+            }
+
+            if (!document.getElementById('showTeacherMascot').checked) {
+                document.getElementById('showTeacherMascot').checked = true;
+                document.getElementById('teacherMascotOptions').classList.remove('hidden');
+            }
+            renderWorksheet();
+        }
+
+        function onMascotScaleChange(val) {
+            const clamped = Math.max(50, Math.min(160, parseInt(val) || 100));
+            document.getElementById('mascotScale').value = clamped;
+            document.getElementById('mascotScaleLabel').innerText = `${clamped}%`;
+            renderWorksheet();
+        }
+
+        function handleCustomMascotUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                state.customMascotDataUrl = e.target.result;
+                selectTeacherMascotGender('custom');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function onArithFontScaleChange(val) {
+            const clamped = Math.max(60, Math.min(180, parseInt(val) || 100));
+            document.getElementById('arithFontScale').value = clamped;
+            document.getElementById('arithFontScaleLabel').innerText = `${clamped}%`;
+            renderWorksheet();
+        }
+
+        function adjustArithFontScale(delta) {
+            const current = parseInt(document.getElementById('arithFontScale').value) || 100;
+            onArithFontScaleChange(current + delta);
+        }
+
+        // 퍼즐 조각(격자) 내 숫자 크기 조절 핸들러
+        function onBadgeFontScaleChange(val) {
+            const clamped = Math.max(60, Math.min(200, parseInt(val) || 100));
+            document.getElementById('badgeFontScale').value = clamped;
+            document.getElementById('badgeFontScaleLabel').innerText = `${clamped}%`;
+            renderWorksheet();
+        }
+
+        function adjustBadgeFontScale(delta) {
+            const current = parseInt(document.getElementById('badgeFontScale').value) || 100;
+            onBadgeFontScaleChange(current + delta);
+        }
 
         function renderSampleButtons() {
             const container = document.getElementById('sampleIllustrationGrid');
@@ -846,7 +1558,7 @@
             }).join('');
         }
 
-        // 전역 붙여넣기(Ctrl+V) 이벤트 리스너: 클립보드에 이미지가 있으면 즉시 적용
+        // 전역 붙여넣기(Ctrl+V) 이벤트 리스너
         document.addEventListener('paste', (event) => {
             const clipboardData = event.clipboardData || window.clipboardData;
             if (!clipboardData || !clipboardData.items) return;
@@ -935,6 +1647,16 @@
                 .replace(/'/g, '&#39;');
         }
 
+        // 메인 제목을 어절별로 다채로운 색상으로 렌더링하는 헬퍼
+        function buildColorfulTitleHtml(titleText) {
+            const words = titleText.split(/\s+/).filter(Boolean);
+            if (words.length === 0) return '';
+            return words.map((word, idx) => {
+                const color = TITLE_WORD_COLORS[idx % TITLE_WORD_COLORS.length];
+                return `<span style="color: ${color};">${escapeHtml(word)}</span>`;
+            }).join(' ');
+        }
+
         function onTitleToggle() {
             const showTitle = document.getElementById('showTitle').checked;
             const titleWrapper = document.getElementById('titleInputWrapper');
@@ -953,6 +1675,17 @@
                 detailBox.classList.remove('hidden');
             } else {
                 detailBox.classList.add('hidden');
+            }
+            renderWorksheet();
+        }
+
+        function onMatchTraceToggle() {
+            const matchTraceChecked = document.getElementById('matchTraceMode').checked;
+            const dottedWrapper = document.getElementById('dottedMatchTraceWrapper');
+            if (matchTraceChecked) {
+                dottedWrapper.classList.remove('hidden');
+            } else {
+                dottedWrapper.classList.add('hidden');
             }
             renderWorksheet();
         }
@@ -1241,10 +1974,13 @@
             }
 
             const matchTraceBox = document.getElementById('matchTraceOptionBox');
+            const arithScaleBox = document.getElementById('arithFontScaleBox');
             if (matchCheck.checked) {
                 matchTraceBox.classList.remove('hidden');
+                arithScaleBox.classList.add('hidden');
             } else {
                 matchTraceBox.classList.add('hidden');
+                arithScaleBox.classList.remove('hidden');
             }
 
             regenerateProblems();
@@ -2372,19 +3108,42 @@
             `;
         }
 
+        // 입력된 날짜 문자열에서 월/일 숫자만 추출 ("월", "일"은 고정 텍스트로 분리)
+        function parseMonthDayNumbers(rawDateStr) {
+            if (!rawDateStr) return { month: '', day: '', hasValue: false };
+            const nums = rawDateStr.match(/\d+/g);
+            if (nums && nums.length >= 2) {
+                return { month: nums[0], day: nums[1], hasValue: true };
+            }
+            if (nums && nums.length === 1) {
+                if (rawDateStr.includes('일') && !rawDateStr.includes('월')) {
+                    return { month: '', day: nums[0], hasValue: true };
+                }
+                return { month: nums[0], day: '', hasValue: true };
+            }
+            return { month: rawDateStr, day: '', hasValue: true };
+        }
+
         function renderWorksheet() {
             const showTitle = document.getElementById('showTitle').checked;
-            const title = escapeHtml(document.getElementById('worksheetTitle').value || '수학 그림 퍼즐');
+            const rawTitle = (document.getElementById('worksheetTitle').value || '수학 그림 퍼즐').trim();
             const showInfo = document.getElementById('showStudentInfo').checked;
             const studentDateText = (document.getElementById('studentDateInput').value || '').trim();
             const studentNameText = (document.getElementById('studentNameInput').value || '').trim();
+            const dottedStudentInfoMode = document.getElementById('dottedStudentInfoMode').checked;
             const infoFontScale = (parseInt(document.getElementById('infoFontScale').value) || 150) / 100;
+
+            const showTeacherMascot = document.getElementById('showTeacherMascot').checked;
+            const mascotScale = (parseInt(document.getElementById('mascotScale').value) || 100) / 100;
 
             const teacherMode = document.getElementById('teacherMode').checked;
             const dottedTraceMode = document.getElementById('dottedTraceMode').checked;
             const matchTraceMode = document.getElementById('matchTraceMode').checked;
+            const dottedMatchTraceMode = document.getElementById('dottedMatchTraceMode').checked;
             const hideBadgeCircle = document.getElementById('hideBadgeCircle').checked;
             const matchFontScale = (parseInt(document.getElementById('matchFontScale').value) || 100) / 100;
+            const arithFontScale = (parseInt(document.getElementById('arithFontScale').value) || 100) / 100;
+            const badgeFontScale = (parseInt(document.getElementById('badgeFontScale').value) || 100) / 100;
             const layoutMode = document.getElementById('layoutMode').value;
 
             const printStyleEl = document.getElementById('dynamic-print-style');
@@ -2399,10 +3158,12 @@
                 container.innerHTML = '';
 
                 const maxDim = Math.max(state.cols, state.rows);
-                const exprFontSize = maxDim <= 3 ? '20px' : maxDim === 4 ? '16px' : maxDim === 5 ? '13px' : '10.5px';
+                const baseExprPx = maxDim <= 3 ? 20 : maxDim === 4 ? 16 : maxDim === 5 ? 13 : 10.5;
+                const exprFontSize = `${Math.round(baseExprPx * arithFontScale * 10) / 10}px`;
 
                 const baseSingleNumPx = maxDim <= 3 ? 44 : maxDim === 4 ? 36 : maxDim === 5 ? 28 : 22;
-                const singleNumFontSize = `${Math.round(baseSingleNumPx * matchFontScale)}px`;
+                const singleNumPx = Math.round(baseSingleNumPx * matchFontScale);
+                const singleNumFontSize = `${singleNumPx}px`;
 
                 const cellPadding = maxDim <= 3 ? '4px 4px 6px 4px' : maxDim === 4 ? '3px 3px 4px 3px' : maxDim === 5 ? '2px 2px 3px 2px' : '1px 2px 2px 2px';
 
@@ -2411,19 +3172,24 @@
                 const boxHeight = `${boxHeightNum}px`;
                 const eqFontSize = maxDim <= 3 ? '22px' : maxDim === 4 ? '18px' : maxDim === 5 ? '14px' : '11px';
 
-                const boxAnswerFontSize = `${Math.floor(boxHeightNum * 0.82)}px`;
+                const boxAnswerFontPx = Math.floor(boxHeightNum * 0.78);
+                const boxAnswerFontSize = `${boxAnswerFontPx}px`;
 
+                // 퍼즐 격자(조각) 내 숫자 크기 및 배지 크기 계산 (사용자 배율 적용)
                 const isCornerPos = state.badgePosition !== 'center';
-                const badgeSize = isCornerPos
-                    ? (maxDim <= 4 ? '28px' : maxDim === 5 ? '23px' : '19px')
-                    : (maxDim <= 4 ? '34px' : maxDim === 5 ? '28px' : '23px');
-                const badgeFont = hideBadgeCircle
+                const baseBadgeSizePx = isCornerPos
+                    ? (maxDim <= 4 ? 28 : maxDim === 5 ? 23 : 19)
+                    : (maxDim <= 4 ? 34 : maxDim === 5 ? 28 : 23);
+                const baseBadgeFontPx = hideBadgeCircle
                     ? (isCornerPos
-                        ? (maxDim <= 4 ? '16px' : maxDim === 5 ? '13px' : '11px')
-                        : (maxDim <= 4 ? '20px' : maxDim === 5 ? '16px' : '13px'))
+                        ? (maxDim <= 4 ? 16 : maxDim === 5 ? 13 : 11)
+                        : (maxDim <= 4 ? 20 : maxDim === 5 ? 16 : 13))
                     : (isCornerPos
-                        ? (maxDim <= 4 ? '13px' : maxDim === 5 ? '11px' : '9.5px')
-                        : (maxDim <= 4 ? '16px' : maxDim === 5 ? '13px' : '11px'));
+                        ? (maxDim <= 4 ? 13 : maxDim === 5 ? 11 : 9.5)
+                        : (maxDim <= 4 ? 16 : maxDim === 5 ? 13 : 11));
+
+                const badgeSize = `${Math.round(baseBadgeSizePx * badgeFontScale)}px`;
+                const badgeFont = `${Math.round(baseBadgeFontPx * badgeFontScale * 10) / 10}px`;
 
                 const badgePosClass = state.badgePosition === 'top-left'
                     ? 'badge-pos-top-left'
@@ -2434,6 +3200,17 @@
                 const isAllMatchMode = state.problems.length > 0 && state.problems.every(p => p.isMatchOnly);
                 const isConcreteMode = isAllMatchMode && state.matchDisplayType === 'concrete';
 
+                // 오른쪽 하단 선생님 마스코트 HTML 생성기
+                const buildCornerMascotHtml = () => {
+                    if (!showTeacherMascot) return '';
+                    const size = Math.round(98 * mascotScale);
+                    return `
+                        <div class="teacher-corner-mascot" style="width: ${size}px; height: ${size}px;">
+                            ${getTeacherMascotInnerHtml()}
+                        </div>
+                    `;
+                };
+
                 const buildPieceImgTag = (rowIdx, colIdx) => {
                     const widthPct = state.cols * 100;
                     const heightPct = state.rows * 100;
@@ -2442,63 +3219,95 @@
                     return `<img src="${croppedUrl}" class="piece-img" style="width: ${widthPct}%; height: ${heightPct}%; left: ${leftPct}%; top: ${topPct}%;" alt="">`;
                 };
 
-                // 날짜(현재의 2배: 38px -> 76px 기준), 이름(현재의 1.5배: 38px -> 57px 기준)
+                // 우측 상단 기입란: 이름 뒤 공백(기입 박스)을 넓혀 윗줄 날짜 전체 폭과 정확히 동일하게 맞춤
                 const buildStudentInfoHtml = () => {
                     if (!showInfo) return '';
                     const infoFontPx = Math.round(13 * infoFontScale);
-                    const dateSlotWidth = Math.round(76 * infoFontScale); // 기존 38px의 2배
-                    const nameSlotWidth = Math.round(57 * infoFontScale); // 기존 38px의 1.5배
-                    const unitGapPx = Math.round(16 * infoFontScale);     // 날짜 폭 2배에 맞춰 월·일 간격도 2배
-                    const slotGapPx = Math.max(8, Math.round(10 * Math.min(infoFontScale, 2.5)));
+                    const singleDateBoxW = Math.round(38 * infoFontScale);
+                    const gapPx = Math.max(4, Math.round(5 * Math.min(infoFontScale, 2.2)));
+                    const nameLabelGap = Math.max(6, gapPx + 2);
 
-                    const dateInner = studentDateText
-                        ? `<span class="info-trace-text">${escapeHtml(studentDateText)}</span>`
-                        : `<span class="date-default-units"><span>월</span><span style="margin-left: ${unitGapPx}px;">일</span></span>`;
+                    const parsedDate = parseMonthDayNumbers(studentDateText);
+                    const monthBoxInner = parsedDate.month
+                        ? renderTraceableTextHtml(parsedDate.month, infoFontPx, dottedStudentInfoMode)
+                        : '&nbsp;';
+                    const dayBoxInner = parsedDate.day
+                        ? renderTraceableTextHtml(parsedDate.day, infoFontPx, dottedStudentInfoMode)
+                        : '&nbsp;';
+
+                    const dateBlockHtml = `
+                        <div class="flex items-center justify-between font-bold text-gray-800 w-full" style="gap: ${gapPx}px;">
+                            <span class="cream-fill-box" style="min-width: ${singleDateBoxW}px;">${monthBoxInner}</span>
+                            <span>월</span>
+                            <span class="cream-fill-box" style="min-width: ${singleDateBoxW}px;">${dayBoxInner}</span>
+                            <span>일</span>
+                        </div>
+                    `;
 
                     const nameInner = studentNameText
-                        ? `<span class="info-trace-text">${escapeHtml(studentNameText)}</span>`
+                        ? renderTraceableTextHtml(studentNameText, infoFontPx, dottedStudentInfoMode)
                         : `<span style="visibility: hidden;">홍길동</span>`;
 
                     return `
-                        <div class="w-full font-bold text-gray-900 flex items-end justify-end flex-wrap ${showTitle ? 'mt-1.5' : ''}" style="font-size: ${infoFontPx}px; gap: ${slotGapPx}px;">
-                            <div class="flex items-baseline gap-1">
-                                <span>날짜:</span>
-                                <span class="info-trace-slot" style="min-width: ${dateSlotWidth}px;">${dateInner}</span>
-                            </div>
-                            <div class="flex items-baseline gap-1">
-                                <span>이름:</span>
-                                <span class="info-trace-slot" style="min-width: ${nameSlotWidth}px;">${nameInner}</span>
+                        <div class="flex flex-col items-stretch justify-end shrink-0" style="font-size: ${infoFontPx}px; gap: ${gapPx}px;">
+                            ${dateBlockHtml}
+                            <div class="flex items-center font-bold text-gray-800 w-full" style="gap: ${nameLabelGap}px;">
+                                <span class="text-gray-600 shrink-0">이름</span>
+                                <span class="cream-fill-box flex-1 w-full">${nameInner}</span>
                             </div>
                         </div>
                     `;
                 };
 
+                // 좌측: 윗줄 다채로운 메인제목 / 아랫줄(구분선 바로 위) 노란퍼즐배지 + 조화로운 카테고리 배지
                 const buildHeader = () => {
-                    let badgeHtml = '';
+                    let modeBadgeHtml = '';
                     if (isConcreteMode) {
-                        badgeHtml = '<span class="text-sm bg-indigo-600 text-white px-2 py-0.5 rounded ml-1 align-middle">구체물 개수 세기</span>';
+                        modeBadgeHtml = '<span class="text-xs bg-indigo-600 text-white px-2.5 py-1 rounded-full font-bold leading-none">구체물 세기</span>';
                     } else if (isAllMatchMode && matchTraceMode) {
-                        badgeHtml = '<span class="text-sm bg-indigo-600 text-white px-2 py-0.5 rounded ml-1 align-middle">숫자 덮어쓰기용</span>';
+                        modeBadgeHtml = `<span class="text-xs bg-indigo-600 text-white px-2.5 py-1 rounded-full font-bold leading-none">${dottedMatchTraceMode ? '점선 따라쓰기' : '숫자 따라쓰기'}</span>`;
                     } else if (teacherMode) {
-                        badgeHtml = dottedTraceMode
-                            ? '<span class="text-sm bg-amber-500 text-white px-2 py-0.5 rounded ml-1 align-middle">따라쓰기용</span>'
-                            : '<span class="text-sm bg-emerald-600 text-white px-2 py-0.5 rounded ml-1 align-middle">교사용 정답지</span>';
+                        modeBadgeHtml = dottedTraceMode
+                            ? '<span class="text-xs bg-amber-500 text-white px-2.5 py-1 rounded-full font-bold leading-none">따라쓰기용</span>'
+                            : '<span class="text-xs bg-emerald-600 text-white px-2.5 py-1 rounded-full font-bold leading-none">교사용 정답지</span>';
                     }
 
-                    const titleRowHtml = showTitle
-                        ? `<div class="w-full">
-                               <h1 class="text-2xl font-black text-gray-900 tracking-tight">${title} ${badgeHtml}</h1>
+                    const gridBadgeText = `${state.cols}×${state.rows} 퍼즐`;
+                    const colorfulTitleHtml = buildColorfulTitleHtml(rawTitle);
+
+                    const topicCategoryText = isConcreteMode
+                        ? '구체물 수 세기'
+                        : (isAllMatchMode ? '1:1 수 인지' : '사칙연산 퍼즐');
+                    const topicEmoji = isConcreteMode ? '🍎' : (isAllMatchMode ? '🔢' : '🧩');
+
+                    const leftBrandHtml = showTitle
+                        ? `<div class="flex flex-col items-start justify-end min-w-0 gap-2">
+                               <div class="header-brand-title text-[26px] font-black truncate">
+                                   ${colorfulTitleHtml}
+                               </div>
+                               <div class="flex items-center flex-wrap gap-2">
+                                   <span class="header-yellow-badge px-3 py-1.5 text-[13px] tracking-tight">
+                                       ${gridBadgeText}
+                                   </span>
+                                   <span class="header-topic-pill px-3 py-1.5 text-[13px] tracking-tight">
+                                       <span>${topicEmoji}</span>
+                                       <span>${topicCategoryText}</span>
+                                   </span>
+                                   ${modeBadgeHtml}
+                               </div>
                            </div>`
-                        : (badgeHtml ? `<div class="w-full mb-1">${badgeHtml}</div>` : '');
+                        : (modeBadgeHtml
+                            ? `<div class="flex items-center gap-2">${modeBadgeHtml}</div>`
+                            : `<div></div>`);
 
-                    const infoRowHtml = buildStudentInfoHtml();
+                    const rightInfoHtml = buildStudentInfoHtml();
 
-                    if (!titleRowHtml && !infoRowHtml) return '';
+                    if (!showTitle && !showInfo && !modeBadgeHtml) return '';
 
                     return `
-                        <div class="border-b-2 border-gray-900 pb-2 mb-2 flex flex-col">
-                            ${titleRowHtml}
-                            ${infoRowHtml}
+                        <div class="worksheet-fancy-header">
+                            ${leftBrandHtml}
+                            ${rightInfoHtml}
                         </div>
                     `;
                 };
@@ -2533,20 +3342,23 @@
                                     `;
                                 }
                             } else {
-                                const numSpanClass = matchTraceMode ? 'dotted-trace-text-large' : 'single-num-plain';
+                                const numDisplayHtml = matchTraceMode
+                                    ? renderTraceableTextHtml(p.expr, singleNumPx, dottedMatchTraceMode, 'dotted-trace-text-large')
+                                    : `<span class="single-num-plain">${escapeHtml(p.expr)}</span>`;
+
                                 if (teacherMode && !dottedTraceMode && !matchTraceMode) {
                                     cellsHtml += `
                                         <div class="problem-cell problem-cell-match">
                                             ${buildPieceImgTag(r, c)}
                                             <div class="teacher-overlay justify-center" style="font-size: ${singleNumFontSize};">
-                                                <span class="${numSpanClass}">${p.expr}</span>
+                                                ${numDisplayHtml}
                                             </div>
                                         </div>
                                     `;
                                 } else {
                                     cellsHtml += `
                                         <div class="problem-cell problem-cell-match" style="font-size: ${singleNumFontSize};">
-                                            <span class="${numSpanClass}">${p.expr}</span>
+                                            ${numDisplayHtml}
                                         </div>
                                     `;
                                 }
@@ -2554,13 +3366,14 @@
                         } else {
                             if (teacherMode) {
                                 if (dottedTraceMode) {
+                                    const dottedAnswerHtml = renderTraceableTextHtml(String(p.answer), boxAnswerFontPx, true, 'dotted-trace-text');
                                     cellsHtml += `
                                         <div class="problem-cell" style="padding: ${cellPadding};">
                                             <div class="problem-expr-area" style="font-size: ${exprFontSize};">${p.expr}</div>
                                             <div class="answer-write-row">
                                                 <span style="font-size: ${eqFontSize};">=</span>
                                                 <div class="red-answer-box" style="width: ${boxWidth}; height: ${boxHeight}; font-size: ${boxAnswerFontSize};">
-                                                    <span class="dotted-trace-text">${p.answer}</span>
+                                                    ${dottedAnswerHtml}
                                                 </div>
                                             </div>
                                         </div>
@@ -2654,13 +3467,12 @@
                     return { w: Math.floor(w), h: Math.floor(h) };
                 };
 
-                // 최대 500%까지 확대될 경우 상단 헤더 높이 증가분을 계산해 그리드 높이를 안전하게 보정
-                const extraHeaderSpace = showInfo ? Math.max(0, Math.round((infoFontScale - 1.2) * 20)) : 0;
+                const extraHeaderSpace = showInfo ? Math.max(0, Math.round((infoFontScale - 1.2) * 26)) : 0;
 
                 if (layoutMode === '1page-vertical') {
                     const page = document.createElement('div');
                     page.className = 'a4-page a4-portrait justify-between';
-                    const sameBox = fitBox(640, 420 - Math.floor(extraHeaderSpace / 2), state.cols, state.rows);
+                    const sameBox = fitBox(595, 405 - Math.floor(extraHeaderSpace / 2), state.cols, state.rows);
 
                     page.innerHTML = `
                         <div>
@@ -2678,13 +3490,14 @@
                             </div>
                             ${buildPiecesGrid(sameBox.w, sameBox.h)}
                         </div>
+                        ${buildCornerMascotHtml()}
                     `;
                     container.appendChild(page);
 
                 } else if (layoutMode === '1page-horizontal') {
                     const page = document.createElement('div');
                     page.className = 'a4-page a4-landscape justify-between';
-                    const box = fitBox(470, 555 - extraHeaderSpace, state.cols, state.rows);
+                    const box = fitBox(455, 530 - extraHeaderSpace, state.cols, state.rows);
 
                     page.innerHTML = `
                         ${buildHeader()}
@@ -2701,11 +3514,12 @@
                                 ${buildPiecesGrid(box.w, box.h)}
                             </div>
                         </div>
+                        ${buildCornerMascotHtml()}
                     `;
                     container.appendChild(page);
 
                 } else if (layoutMode === '2page-split') {
-                    const box = fitBox(660, 860 - extraHeaderSpace, state.cols, state.rows);
+                    const box = fitBox(630, 825 - extraHeaderSpace, state.cols, state.rows);
 
                     const page1 = document.createElement('div');
                     page1.className = 'a4-page a4-portrait';
@@ -2714,20 +3528,22 @@
                         <div class="flex-1 flex flex-col items-center justify-center">
                             ${buildProblemGrid(box.w, box.h)}
                         </div>
+                        ${buildCornerMascotHtml()}
                     `;
 
                     const page2 = document.createElement('div');
                     page2.className = 'a4-page a4-portrait';
                     page2.innerHTML = `
-                        <div class="border-b-2 border-gray-900 pb-2 mb-3 flex items-center justify-between">
-                            <div>
-                                <h2 class="text-xl font-black text-gray-900">${showTitle ? `${title} - ` : ''}✂️ 퍼즐 조각 (오리는 곳)</h2>
+                        <div class="worksheet-fancy-header">
+                            <div class="flex items-center gap-2">
+                                <h2 class="header-brand-title text-xl font-black text-gray-800">${showTitle ? `${buildColorfulTitleHtml(rawTitle)} - ` : ''}✂️ 퍼즐 조각 (오리는 곳)</h2>
                             </div>
-                            <span class="text-xs font-bold text-gray-500">2 / 2 쪽</span>
+                            <span class="header-yellow-badge px-2.5 py-0.5 text-xs font-black">2 / 2 쪽</span>
                         </div>
                         <div class="flex-1 flex flex-col items-center justify-center">
                             ${buildPiecesGrid(box.w, box.h)}
                         </div>
+                        ${buildCornerMascotHtml()}
                     `;
 
                     container.appendChild(page1);
