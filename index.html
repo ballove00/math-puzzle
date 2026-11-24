@@ -178,7 +178,7 @@
 
         /* 퍼즐 조각 및 그리드 스타일 */
         .problem-cell {
-            border: 2px solid #1f2937;
+            border: 1.8px solid #1f2937;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -227,15 +227,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            gap: 4px;
             width: 100%;
             flex-shrink: 0;
         }
 
         .red-answer-box {
-            border: 2.5px solid #ef4444;
+            border: 2px solid #ef4444;
             background-color: #ffffff;
-            border-radius: 6px;
+            border-radius: 5px;
             box-sizing: border-box;
             display: flex;
             align-items: center;
@@ -337,13 +337,13 @@
         }
 
         .badge-pos-top-left {
-            top: 5px;
-            left: 5px;
+            top: 4px;
+            left: 4px;
         }
 
         .badge-pos-bottom-right {
-            bottom: 5px;
-            right: 5px;
+            bottom: 4px;
+            right: 4px;
         }
 
         .answer-badge span {
@@ -445,11 +445,18 @@
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-indigo-500">
             </div>
 
-            <div class="flex items-center justify-between text-xs text-gray-600">
-                <label class="flex items-center gap-1.5 cursor-pointer">
-                    <input type="checkbox" id="showStudentInfo" checked onchange="onStudentInfoToggle()" class="rounded text-indigo-600">
-                    <span>날짜 / 이름 기입란 표시</span>
-                </label>
+            <!-- 날짜 / 이름 각각 개별 표시 체크박스 + 교사용 정답지 미리보기 -->
+            <div class="flex items-center justify-between text-xs text-gray-600 gap-2 flex-wrap">
+                <div class="flex items-center gap-3">
+                    <label class="flex items-center gap-1.5 cursor-pointer font-bold text-gray-700">
+                        <input type="checkbox" id="showDateInfo" checked onchange="onStudentInfoToggle()" class="rounded text-indigo-600">
+                        <span>📅 날짜 표시</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer font-bold text-gray-700">
+                        <input type="checkbox" id="showNameInfo" checked onchange="onStudentInfoToggle()" class="rounded text-indigo-600">
+                        <span>✏️ 이름 표시</span>
+                    </label>
+                </div>
                 <label class="flex items-center gap-1.5 cursor-pointer font-bold text-emerald-700">
                     <input type="checkbox" id="teacherMode" onchange="onTeacherModeChange()" class="rounded text-emerald-600">
                     <span>교사용 정답지 미리보기</span>
@@ -459,12 +466,12 @@
             <!-- 날짜 / 이름 덮어쓰기 입력 및 폰트 크기 설정 박스 -->
             <div id="studentInfoDetailBox" class="mt-2.5 bg-gray-50 border border-gray-200 rounded-lg p-2.5 space-y-2.5">
                 <div class="grid grid-cols-2 gap-2">
-                    <div>
+                    <div id="dateInputCol">
                         <label class="block text-[11px] font-bold text-gray-700 mb-1">📅 날짜 (숫자만 덮어쓰기)</label>
                         <input type="text" id="studentDateInput" placeholder="예: 11월 20일 또는 11 20" oninput="renderWorksheet()"
                             class="w-full border border-gray-300 bg-white rounded-md px-2 py-1.5 text-xs font-bold focus:outline-none focus:border-indigo-500">
                     </div>
-                    <div>
+                    <div id="nameInputCol">
                         <label class="block text-[11px] font-bold text-gray-700 mb-1">✏️ 이름 (덮어쓰기용)</label>
                         <input type="text" id="studentNameInput" placeholder="예: 홍길동" oninput="renderWorksheet()"
                             class="w-full border border-gray-300 bg-white rounded-md px-2 py-1.5 text-xs font-bold focus:outline-none focus:border-indigo-500">
@@ -480,18 +487,18 @@
                 </div>
 
                 <p class="text-[11px] text-gray-500 leading-snug">
-                    날짜 입력 시 <strong>월, 일</strong>은 미리 제공되며 숫자만 칸 안에 덮어쓰기로 들어갑니다.
+                    날짜와 이름을 각각 따로 켜고 끌 수 있으며, 날짜 입력 시 <strong>월, 일</strong>은 미리 제공됩니다.
                 </p>
 
-                <!-- 날짜 / 이름 폰트 크기 조절 (기본 150%, 최대 500%) -->
+                <!-- 날짜 / 이름 폰트 크기 조절 (기본 150%, 최대 700%) -->
                 <div class="border-t border-gray-200 pt-2">
                     <div class="flex items-center justify-between text-xs font-bold text-gray-700 mb-1">
-                        <span>🔍 날짜 / 이름 글자 크기 조절 (최대 500%)</span>
+                        <span>🔍 날짜 / 이름 글자 크기 조절 (최대 700%)</span>
                         <span id="infoFontScaleLabel" class="bg-indigo-600 text-white text-[11px] px-2 py-0.5 rounded-full">150%</span>
                     </div>
                     <div class="flex items-center gap-1.5">
                         <button type="button" onclick="adjustInfoFontScale(-10)" class="w-7 h-7 bg-white border border-gray-300 hover:bg-gray-100 rounded-lg font-black text-gray-800 flex items-center justify-center shadow-xs" title="글자 축소">-</button>
-                        <input type="range" id="infoFontScale" min="80" max="500" step="10" value="150" oninput="onInfoFontScaleChange(this.value)" class="flex-1 accent-indigo-600 cursor-pointer">
+                        <input type="range" id="infoFontScale" min="80" max="700" step="10" value="150" oninput="onInfoFontScaleChange(this.value)" class="flex-1 accent-indigo-600 cursor-pointer">
                         <button type="button" onclick="adjustInfoFontScale(10)" class="w-7 h-7 bg-white border border-gray-300 hover:bg-gray-100 rounded-lg font-black text-gray-800 flex items-center justify-center shadow-xs" title="글자 확대">+</button>
                         <button type="button" onclick="onInfoFontScaleChange(150)" class="text-[11px] bg-white border border-gray-200 hover:bg-gray-100 text-gray-700 px-2 py-1 rounded-lg font-bold">초기화</button>
                     </div>
@@ -543,21 +550,22 @@
             </div>
         </section>
 
-        <!-- 2. 그리드 크기 및 인쇄 레이아웃 -->
+        <!-- 2. 그리드 크기 및 인쇄 레이아웃 (최대 10×10 확장) -->
         <section class="mb-5 border-t pt-4">
-            <h2 class="text-sm font-bold text-gray-700 mb-2">2. 퍼즐 그리드 크기 (가로 열 × 세로 행)</h2>
-            <div class="grid grid-cols-5 gap-1.5 mb-2.5">
+            <h2 class="text-sm font-bold text-gray-700 mb-2">2. 퍼즐 그리드 크기 (가로 열 × 세로 행, 최대 10×10)</h2>
+            <div class="grid grid-cols-6 gap-1 mb-2.5">
                 <button onclick="setGrid(3, 3)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="3x3">3×3</button>
                 <button onclick="setGrid(4, 4)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 border-indigo-500 text-indigo-700" data-grid="4x4">4×4</button>
-                <button onclick="setGrid(3, 5)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="3x5">3×5<span class="block text-[10px] text-indigo-600 font-normal">2단추천</span></button>
+                <button onclick="setGrid(3, 5)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="3x5">3×5<span class="block text-[9px] text-indigo-600 font-normal">2단추천</span></button>
                 <button onclick="setGrid(5, 5)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="5x5">5×5</button>
-                <button onclick="setGrid(6, 6)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="6x6">6×6</button>
+                <button onclick="setGrid(8, 8)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="8x8">8×8</button>
+                <button onclick="setGrid(10, 10)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="10x10">10×10</button>
             </div>
             <div class="flex items-center gap-2 text-sm mb-3">
                 <span class="text-gray-600 text-xs font-bold">직접 입력:</span>
-                <input type="number" id="gridCols" value="4" min="2" max="8" onchange="onGridManualChange()" class="w-16 border border-gray-300 rounded px-2 py-1 text-center font-bold">
+                <input type="number" id="gridCols" value="4" min="2" max="10" onchange="onGridManualChange()" class="w-16 border border-gray-300 rounded px-2 py-1 text-center font-bold">
                 <span class="text-gray-500 font-bold">열(가로) ×</span>
-                <input type="number" id="gridRows" value="4" min="2" max="8" onchange="onGridManualChange()" class="w-16 border border-gray-300 rounded px-2 py-1 text-center font-bold">
+                <input type="number" id="gridRows" value="4" min="2" max="10" onchange="onGridManualChange()" class="w-16 border border-gray-300 rounded px-2 py-1 text-center font-bold">
                 <span class="text-gray-500 font-bold">행(세로)</span>
             </div>
 
@@ -565,7 +573,7 @@
             <select id="layoutMode" onchange="renderWorksheet()" class="w-full border border-gray-300 rounded-lg px-2.5 py-2 text-xs font-bold bg-gray-50">
                 <option value="1page-vertical">1페이지 상하 2단 분할 (세로 A4 - 정사각/가로형 추천)</option>
                 <option value="1page-horizontal">1페이지 좌우 2단 분할 (가로 A4 - 3×5 등 세로형 추천)</option>
-                <option value="2page-split">2페이지 분리 인쇄 (세로 A4 - 5×5, 6×6 대형 추천)</option>
+                <option value="2page-split">2페이지 분리 인쇄 (세로 A4 - 5×5 ~ 10×10 대형 추천)</option>
             </select>
         </section>
 
@@ -672,15 +680,15 @@
                         </div>
                     </div>
 
-                    <!-- 1:1 숫자/구체물 크기 확대/축소 조절 -->
+                    <!-- 1:1 숫자/구체물 크기 확대/축소 조절 (최대 400%) -->
                     <div class="border-t border-indigo-200 pt-2">
                         <div class="flex items-center justify-between text-xs font-bold text-indigo-950 mb-1.5">
-                            <span id="matchScaleTitle">🔍 숫자 폰트 크기 조절</span>
+                            <span id="matchScaleTitle">🔍 숫자 폰트 크기 조절 (최대 400%)</span>
                             <span id="matchFontScaleLabel" class="bg-indigo-600 text-white text-[11px] px-2 py-0.5 rounded-full">100%</span>
                         </div>
                         <div class="flex items-center gap-1.5">
                             <button type="button" onclick="adjustMatchFontScale(-10)" class="w-7 h-7 bg-white border border-indigo-300 hover:bg-indigo-100 rounded-lg font-black text-indigo-800 flex items-center justify-center shadow-sm" title="크기 축소">-</button>
-                            <input type="range" id="matchFontScale" min="60" max="180" step="10" value="100" oninput="onMatchFontScaleChange(this.value)" class="flex-1 accent-indigo-600 cursor-pointer">
+                            <input type="range" id="matchFontScale" min="60" max="400" step="10" value="100" oninput="onMatchFontScaleChange(this.value)" class="flex-1 accent-indigo-600 cursor-pointer">
                             <button type="button" onclick="adjustMatchFontScale(10)" class="w-7 h-7 bg-white border border-indigo-300 hover:bg-indigo-100 rounded-lg font-black text-indigo-800 flex items-center justify-center shadow-sm" title="크기 확대">+</button>
                             <button type="button" onclick="onMatchFontScaleChange(100)" class="text-[11px] bg-white border border-indigo-200 hover:bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold">초기화</button>
                         </div>
@@ -777,15 +785,15 @@
                     </div>
                 </div>
 
-                <!-- 퍼즐 격자(조각) 내 숫자 크기 조절 -->
+                <!-- 퍼즐 격자(조각) 내 숫자 크기 조절 (최대 400%) -->
                 <div class="border-t border-gray-200 pt-2">
                     <div class="flex items-center justify-between text-xs font-bold text-gray-800 mb-1.5">
-                        <span>🔍 퍼즐 조각 내 숫자 크기 조절</span>
+                        <span>🔍 퍼즐 조각 내 숫자 크기 조절 (최대 400%)</span>
                         <span id="badgeFontScaleLabel" class="bg-indigo-600 text-white text-[11px] px-2 py-0.5 rounded-full">100%</span>
                     </div>
                     <div class="flex items-center gap-1.5">
                         <button type="button" onclick="adjustBadgeFontScale(-10)" class="w-7 h-7 bg-white border border-gray-300 hover:bg-gray-100 rounded-lg font-black text-gray-800 flex items-center justify-center shadow-xs" title="숫자 축소">-</button>
-                        <input type="range" id="badgeFontScale" min="60" max="200" step="10" value="100" oninput="onBadgeFontScaleChange(this.value)" class="flex-1 accent-indigo-600 cursor-pointer">
+                        <input type="range" id="badgeFontScale" min="60" max="400" step="10" value="100" oninput="onBadgeFontScaleChange(this.value)" class="flex-1 accent-indigo-600 cursor-pointer">
                         <button type="button" onclick="adjustBadgeFontScale(10)" class="w-7 h-7 bg-white border border-gray-300 hover:bg-gray-100 rounded-lg font-black text-gray-800 flex items-center justify-center shadow-xs" title="숫자 확대">+</button>
                         <button type="button" onclick="onBadgeFontScaleChange(100)" class="text-[11px] bg-white border border-gray-200 hover:bg-gray-100 text-gray-700 px-2 py-1 rounded-lg font-bold">초기화</button>
                     </div>
@@ -1890,7 +1898,7 @@
         }
 
         function onBadgeFontScaleChange(val) {
-            const clamped = Math.max(60, Math.min(200, parseInt(val) || 100));
+            const clamped = Math.max(60, Math.min(400, parseInt(val) || 100));
             document.getElementById('badgeFontScale').value = clamped;
             document.getElementById('badgeFontScaleLabel').innerText = `${clamped}%`;
             renderWorksheet();
@@ -2028,12 +2036,26 @@
         }
 
         function onStudentInfoToggle() {
-            const showInfo = document.getElementById('showStudentInfo').checked;
+            const showDate = document.getElementById('showDateInfo').checked;
+            const showName = document.getElementById('showNameInfo').checked;
             const detailBox = document.getElementById('studentInfoDetailBox');
-            if (showInfo) {
-                detailBox.classList.remove('hidden');
-            } else {
+            const dateCol = document.getElementById('dateInputCol');
+            const nameCol = document.getElementById('nameInputCol');
+
+            if (!showDate && !showName) {
                 detailBox.classList.add('hidden');
+            } else {
+                detailBox.classList.remove('hidden');
+                if (showDate) {
+                    dateCol.classList.remove('hidden');
+                } else {
+                    dateCol.classList.add('hidden');
+                }
+                if (showName) {
+                    nameCol.classList.remove('hidden');
+                } else {
+                    nameCol.classList.add('hidden');
+                }
             }
             renderWorksheet();
         }
@@ -2050,7 +2072,7 @@
         }
 
         function onInfoFontScaleChange(val) {
-            const clamped = Math.max(80, Math.min(500, parseInt(val) || 150));
+            const clamped = Math.max(80, Math.min(700, parseInt(val) || 150));
             document.getElementById('infoFontScale').value = clamped;
             document.getElementById('infoFontScaleLabel').innerText = `${clamped}%`;
             renderWorksheet();
@@ -2157,7 +2179,7 @@
             if (type === 'concrete') {
                 numOpts.classList.add('hidden');
                 concreteOpts.classList.remove('hidden');
-                scaleTitle.innerText = '🔍 구체물(이모지) 크기 조절';
+                scaleTitle.innerText = '🔍 구체물(이모지) 크기 조절 (최대 400%)';
                 renderEmojiPicker();
 
                 const currentMax = parseInt(document.getElementById('maxNum').value) || 20;
@@ -2170,7 +2192,7 @@
             } else {
                 numOpts.classList.remove('hidden');
                 concreteOpts.classList.add('hidden');
-                scaleTitle.innerText = '🔍 숫자 폰트 크기 조절';
+                scaleTitle.innerText = '🔍 숫자 폰트 크기 조절 (최대 400%)';
             }
 
             regenerateProblems();
@@ -2224,7 +2246,7 @@
         }
 
         function onMatchFontScaleChange(val) {
-            const clamped = Math.max(60, Math.min(180, parseInt(val) || 100));
+            const clamped = Math.max(60, Math.min(400, parseInt(val) || 100));
             document.getElementById('matchFontScale').value = clamped;
             document.getElementById('matchFontScaleLabel').innerText = `${clamped}%`;
             renderWorksheet();
@@ -2286,8 +2308,10 @@
         function onGridManualChange() {
             let cols = parseInt(document.getElementById('gridCols').value) || 4;
             let rows = parseInt(document.getElementById('gridRows').value) || 4;
-            cols = Math.max(2, Math.min(8, cols));
-            rows = Math.max(2, Math.min(8, rows));
+            cols = Math.max(2, Math.min(10, cols));
+            rows = Math.max(2, Math.min(10, rows));
+            document.getElementById('gridCols').value = cols;
+            document.getElementById('gridRows').value = rows;
             state.cols = cols;
             state.rows = rows;
 
@@ -3441,12 +3465,12 @@
 
             const rowsNeeded = Math.ceil(count / colsPerRow);
 
-            const usableW = Math.max(24, cellW - 12);
-            const usableH = Math.max(24, cellH - 12);
+            const usableW = Math.max(16, cellW - 8);
+            const usableH = Math.max(16, cellH - 8);
             const maxByW = (usableW / colsPerRow) * 0.78;
             const maxByH = (usableH / rowsNeeded) * 0.78;
             const baseSize = Math.min(maxByW, maxByH, 46);
-            const finalSize = Math.max(10, Math.round(baseSize * scale));
+            const finalSize = Math.max(8, Math.round(baseSize * scale));
             const gapPx = Math.max(1, Math.round(finalSize * 0.12));
 
             let itemsHtml = '';
@@ -3485,7 +3509,10 @@
         function renderWorksheet() {
             const showTitle = document.getElementById('showTitle').checked;
             const rawTitle = (document.getElementById('worksheetTitle').value || '수학 그림 퍼즐').trim();
-            const showInfo = document.getElementById('showStudentInfo').checked;
+            const showDateInfo = document.getElementById('showDateInfo').checked;
+            const showNameInfo = document.getElementById('showNameInfo').checked;
+            const showAnyInfo = showDateInfo || showNameInfo;
+
             const studentDateText = (document.getElementById('studentDateInput').value || '').trim();
             const studentNameText = (document.getElementById('studentNameInput').value || '').trim();
             const dottedStudentInfoMode = document.getElementById('dottedStudentInfoMode').checked;
@@ -3516,34 +3543,76 @@
                 container.innerHTML = '';
 
                 const maxDim = Math.max(state.cols, state.rows);
-                const baseExprPx = maxDim <= 3 ? 20 : maxDim === 4 ? 16 : maxDim === 5 ? 13 : 10.5;
+
+                // 2×2 ~ 10×10까지 대응하는 비례 폰트 및 기입칸 규격
+                const baseExprPx = maxDim <= 3 ? 20
+                    : maxDim === 4 ? 16
+                    : maxDim === 5 ? 13
+                    : maxDim === 6 ? 10.5
+                    : maxDim === 7 ? 9
+                    : maxDim === 8 ? 8
+                    : maxDim === 9 ? 7.2
+                    : 6.5;
                 const exprFontSize = `${Math.round(baseExprPx * arithFontScale * 10) / 10}px`;
 
-                const baseSingleNumPx = maxDim <= 3 ? 44 : maxDim === 4 ? 36 : maxDim === 5 ? 28 : 22;
+                const baseSingleNumPx = maxDim <= 3 ? 44
+                    : maxDim === 4 ? 36
+                    : maxDim === 5 ? 28
+                    : maxDim === 6 ? 22
+                    : maxDim === 7 ? 19
+                    : maxDim === 8 ? 16.5
+                    : maxDim === 9 ? 14.5
+                    : 13;
                 const singleNumPx = Math.round(baseSingleNumPx * matchFontScale);
                 const singleNumFontSize = `${singleNumPx}px`;
 
-                const cellPadding = maxDim <= 3 ? '4px 4px 6px 4px' : maxDim === 4 ? '3px 3px 4px 3px' : maxDim === 5 ? '2px 2px 3px 2px' : '1px 2px 2px 2px';
+                const cellPadding = maxDim <= 3 ? '4px 4px 6px 4px'
+                    : maxDim === 4 ? '3px 3px 4px 3px'
+                    : maxDim === 5 ? '2px 2px 3px 2px'
+                    : maxDim <= 7 ? '1px 2px 2px 2px'
+                    : '1px 1px 1.5px 1px';
 
-                const boxWidth = maxDim <= 3 ? '78px' : maxDim === 4 ? '64px' : maxDim === 5 ? '50px' : '38px';
-                const boxHeightNum = maxDim <= 3 ? 66 : maxDim === 4 ? 52 : maxDim === 5 ? 40 : 30;
+                const boxWidth = maxDim <= 3 ? '78px'
+                    : maxDim === 4 ? '64px'
+                    : maxDim === 5 ? '50px'
+                    : maxDim === 6 ? '38px'
+                    : maxDim === 7 ? '32px'
+                    : maxDim === 8 ? '27px'
+                    : maxDim === 9 ? '23px'
+                    : '20px';
+
+                const boxHeightNum = maxDim <= 3 ? 66
+                    : maxDim === 4 ? 52
+                    : maxDim === 5 ? 40
+                    : maxDim === 6 ? 30
+                    : maxDim === 7 ? 25
+                    : maxDim === 8 ? 21
+                    : maxDim === 9 ? 18
+                    : 16;
                 const boxHeight = `${boxHeightNum}px`;
-                const eqFontSize = maxDim <= 3 ? '22px' : maxDim === 4 ? '18px' : maxDim === 5 ? '14px' : '11px';
 
-                const boxAnswerFontPx = Math.floor(boxHeightNum * 0.78);
+                const eqFontSize = maxDim <= 3 ? '22px'
+                    : maxDim === 4 ? '18px'
+                    : maxDim === 5 ? '14px'
+                    : maxDim === 6 ? '11px'
+                    : maxDim === 7 ? '9.5px'
+                    : maxDim === 8 ? '8.5px'
+                    : '7.5px';
+
+                const boxAnswerFontPx = Math.max(9, Math.floor(boxHeightNum * 0.78));
                 const boxAnswerFontSize = `${boxAnswerFontPx}px`;
 
                 const isCornerPos = state.badgePosition !== 'center';
                 const baseBadgeSizePx = isCornerPos
-                    ? (maxDim <= 4 ? 28 : maxDim === 5 ? 23 : 19)
-                    : (maxDim <= 4 ? 34 : maxDim === 5 ? 28 : 23);
+                    ? (maxDim <= 4 ? 28 : maxDim === 5 ? 23 : maxDim === 6 ? 19 : maxDim <= 8 ? 15 : 12)
+                    : (maxDim <= 4 ? 34 : maxDim === 5 ? 28 : maxDim === 6 ? 23 : maxDim <= 8 ? 18 : 14);
                 const baseBadgeFontPx = hideBadgeCircle
                     ? (isCornerPos
-                        ? (maxDim <= 4 ? 16 : maxDim === 5 ? 13 : 11)
-                        : (maxDim <= 4 ? 20 : maxDim === 5 ? 16 : 13))
+                        ? (maxDim <= 4 ? 16 : maxDim === 5 ? 13 : maxDim === 6 ? 11 : maxDim <= 8 ? 9 : 7.5)
+                        : (maxDim <= 4 ? 20 : maxDim === 5 ? 16 : maxDim === 6 ? 13 : maxDim <= 8 ? 10.5 : 8.5))
                     : (isCornerPos
-                        ? (maxDim <= 4 ? 13 : maxDim === 5 ? 11 : 9.5)
-                        : (maxDim <= 4 ? 16 : maxDim === 5 ? 13 : 11));
+                        ? (maxDim <= 4 ? 13 : maxDim === 5 ? 11 : maxDim === 6 ? 9.5 : maxDim <= 8 ? 8 : 6.8)
+                        : (maxDim <= 4 ? 16 : maxDim === 5 ? 13 : maxDim === 6 ? 11 : maxDim <= 8 ? 9 : 7.5));
 
                 const badgeSize = `${Math.round(baseBadgeSizePx * badgeFontScale)}px`;
                 const badgeFont = `${Math.round(baseBadgeFontPx * badgeFontScale * 10) / 10}px`;
@@ -3576,40 +3645,51 @@
                 };
 
                 const buildStudentInfoHtml = () => {
-                    if (!showInfo) return '';
+                    if (!showAnyInfo) return '';
                     const infoFontPx = Math.round(13 * infoFontScale);
                     const singleDateBoxW = Math.round(38 * infoFontScale);
+                    const singleNameBoxW = Math.round(76 * infoFontScale);
                     const gapPx = Math.max(4, Math.round(5 * Math.min(infoFontScale, 2.2)));
                     const nameLabelGap = Math.max(6, gapPx + 2);
 
-                    const parsedDate = parseMonthDayNumbers(studentDateText);
-                    const monthBoxInner = parsedDate.month
-                        ? renderTraceableTextHtml(parsedDate.month, infoFontPx, dottedStudentInfoMode)
-                        : '&nbsp;';
-                    const dayBoxInner = parsedDate.day
-                        ? renderTraceableTextHtml(parsedDate.day, infoFontPx, dottedStudentInfoMode)
-                        : '&nbsp;';
+                    let dateBlockHtml = '';
+                    if (showDateInfo) {
+                        const parsedDate = parseMonthDayNumbers(studentDateText);
+                        const monthBoxInner = parsedDate.month
+                            ? renderTraceableTextHtml(parsedDate.month, infoFontPx, dottedStudentInfoMode)
+                            : '&nbsp;';
+                        const dayBoxInner = parsedDate.day
+                            ? renderTraceableTextHtml(parsedDate.day, infoFontPx, dottedStudentInfoMode)
+                            : '&nbsp;';
 
-                    const dateBlockHtml = `
-                        <div class="flex items-center justify-between font-bold text-gray-800 w-full" style="gap: ${gapPx}px;">
-                            <span class="cream-fill-box" style="min-width: ${singleDateBoxW}px;">${monthBoxInner}</span>
-                            <span>월</span>
-                            <span class="cream-fill-box" style="min-width: ${singleDateBoxW}px;">${dayBoxInner}</span>
-                            <span>일</span>
-                        </div>
-                    `;
+                        dateBlockHtml = `
+                            <div class="flex items-center justify-end font-bold text-gray-800 w-full" style="gap: ${gapPx}px;">
+                                <span class="cream-fill-box" style="min-width: ${singleDateBoxW}px;">${monthBoxInner}</span>
+                                <span>월</span>
+                                <span class="cream-fill-box" style="min-width: ${singleDateBoxW}px;">${dayBoxInner}</span>
+                                <span>일</span>
+                            </div>
+                        `;
+                    }
 
-                    const nameInner = studentNameText
-                        ? renderTraceableTextHtml(studentNameText, infoFontPx, dottedStudentInfoMode)
-                        : `<span style="visibility: hidden;">홍길동</span>`;
+                    let nameBlockHtml = '';
+                    if (showNameInfo) {
+                        const nameInner = studentNameText
+                            ? renderTraceableTextHtml(studentNameText, infoFontPx, dottedStudentInfoMode)
+                            : `<span style="visibility: hidden;">홍길동</span>`;
+
+                        nameBlockHtml = `
+                            <div class="flex items-center justify-end font-bold text-gray-800 w-full" style="gap: ${nameLabelGap}px;">
+                                <span class="text-gray-600 shrink-0">이름</span>
+                                <span class="cream-fill-box flex-1" style="min-width: ${singleNameBoxW}px;">${nameInner}</span>
+                            </div>
+                        `;
+                    }
 
                     return `
                         <div class="flex flex-col items-stretch justify-end shrink-0" style="font-size: ${infoFontPx}px; gap: ${gapPx}px;">
                             ${dateBlockHtml}
-                            <div class="flex items-center font-bold text-gray-800 w-full" style="gap: ${nameLabelGap}px;">
-                                <span class="text-gray-600 shrink-0">이름</span>
-                                <span class="cream-fill-box flex-1 w-full">${nameInner}</span>
-                            </div>
+                            ${nameBlockHtml}
                         </div>
                     `;
                 };
@@ -3656,7 +3736,7 @@
 
                     const rightInfoHtml = buildStudentInfoHtml();
 
-                    if (!showTitle && !showInfo && !modeBadgeHtml) return '';
+                    if (!showTitle && !showAnyInfo && !modeBadgeHtml) return '';
 
                     return `
                         <div class="worksheet-fancy-header">
@@ -3818,10 +3898,13 @@
                         h = maxH;
                         w = h * ratio;
                     }
-                    return { w: Math.floor(w), h: Math.floor(h) };
+                    return { w: Math.max(120, Math.floor(w)), h: Math.max(120, Math.floor(h)) };
                 };
 
-                const extraHeaderSpace = showInfo ? Math.max(0, Math.round((infoFontScale - 1.2) * 26)) : 0;
+                const activeInfoRows = (showDateInfo ? 1 : 0) + (showNameInfo ? 1 : 0);
+                const extraHeaderSpace = showAnyInfo
+                    ? Math.max(0, Math.round((infoFontScale - 1.2) * (activeInfoRows === 2 ? 26 : 14)))
+                    : 0;
 
                 if (layoutMode === '1page-vertical') {
                     const page = document.createElement('div');
