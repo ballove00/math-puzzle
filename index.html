@@ -156,7 +156,7 @@
             justify-content: center;
         }
 
-        /* 학습지 오른쪽 하단 선생님 마스코트 배치 (생성된 원본 이미지 그대로 출력) */
+        /* 학습지 오른쪽 하단 선생님 마스코트 배치 */
         .teacher-corner-mascot {
             position: absolute;
             right: 5mm;
@@ -961,10 +961,24 @@
             '#ec4899'  // 핑크
         ];
 
-        // 생성한 원본 이미지 파일 경로
-        const GENERATED_MASCOT_FILES = {
-            male: './Gemini_Generated_Image_zblsduzblsduzbls.png',
-            female: './Gemini_Generated_Image_yjcv2syjcv2syjcv.png'
+        // 남자 선생님 & 여자 선생님 Imgur 직접 이미지 주소 + 로컬/내장 폴백 경로
+        const GENERATED_MASCOT_CANDIDATES = {
+            male: [
+                'https://i.imgur.com/vCUzZEi.png',
+                './Gemini_Generated_Image_zblsduzblsduzbls_2.png',
+                './Gemini_Generated_Image_zblsduzblsduzbls.png'
+            ],
+            female: [
+                'https://i.imgur.com/B5dlyKl.png',
+                './Gemini_Generated_Image_yjcv2syjcv2syjcv_2.png',
+                './Gemini_Generated_Image_yjcv2syjcv2syjcv.png'
+            ]
+        };
+
+        // 오프라인 환경 대비 고화질 내장 DataURL 캐시
+        const EMBEDDED_TEACHER_DATA_URLS = {
+            male: null,
+            female: null
         };
 
         let state = {
@@ -985,6 +999,7 @@
         };
 
         window.onload = () => {
+            initEmbeddedTeacherPortraits();
             renderSampleButtons();
             renderEmojiPicker();
             useBuiltInSample('rocket');
@@ -992,9 +1007,477 @@
         };
 
         // =========================================================================
+        // 오프라인 환경에서도 정상 표시되도록 고해상도 PNG 내장 폴백 생성
+        // =========================================================================
+        function buildEmbeddedTeacherPortraitDataUrl(gender) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 520;
+            canvas.height = 520;
+            const ctx = canvas.getContext('2d');
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            const outline = '#26294a';
+            const lw = 6.5;
+
+            function strokeAndFill(fillStyle, strokeWidth = lw) {
+                if (fillStyle) {
+                    ctx.fillStyle = fillStyle;
+                    ctx.fill();
+                }
+                if (strokeWidth > 0) {
+                    ctx.strokeStyle = outline;
+                    ctx.lineWidth = strokeWidth;
+                    ctx.stroke();
+                }
+            }
+
+            if (gender === 'female') {
+                // --- 여자 선생님 폴백 ---
+                ctx.save();
+                ctx.translate(105, 112);
+                ctx.beginPath(); ctx.arc(0, 0, 44, 0, Math.PI * 2); strokeAndFill('#5597ea', 6);
+                ctx.beginPath(); ctx.arc(0, 0, 33, 0, Math.PI * 2); strokeAndFill('#ffffff', 4.5);
+                ctx.fillStyle = outline;
+                [[0,-25],[25,0],[0,25],[-25,0]].forEach(([x,y]) => {
+                    ctx.beginPath(); ctx.arc(x, y, 2.3, 0, Math.PI * 2); ctx.fill();
+                });
+                ctx.beginPath(); ctx.arc(-11, -3, 3.2, 0, Math.PI * 2); ctx.arc(11, -3, 3.2, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#f87171';
+                ctx.beginPath(); ctx.ellipse(-14, 5, 5, 3, 0, 0, Math.PI * 2); ctx.ellipse(14, 5, 5, 3, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = outline; ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -19); ctx.moveTo(0, 0); ctx.lineTo(13, 10); ctx.stroke();
+                ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.fillStyle = '#5597ea'; ctx.fill();
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(68, 175);
+                ctx.beginPath(); ctx.arc(0, 0, 17, 0, Math.PI * 2); strokeAndFill('#facc15', 4.5);
+                ctx.fillStyle = '#b45309'; ctx.font = '900 18px "Noto Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('$', 0, 1);
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(88, 232);
+                ctx.rotate(-0.42);
+                ctx.beginPath(); ctx.roundRect(-44, -22, 88, 46, 5); strokeAndFill('#4ade80', 4.5);
+                ctx.beginPath(); ctx.roundRect(-44, -26, 88, 42, 5); strokeAndFill('#86efac', 4.5);
+                ctx.beginPath(); ctx.roundRect(-36, -19, 72, 28, 3); strokeAndFill('#bbf7d0', 3);
+                ctx.beginPath(); ctx.arc(0, -5, 11, 0, Math.PI * 2); strokeAndFill('#4ade80', 3);
+                ctx.fillStyle = '#15803d'; ctx.font = '900 14px "Noto Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('₩', 0, -4);
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(106, 284);
+                ctx.beginPath(); ctx.ellipse(0, 3, 17, 11, 0, 0, Math.PI * 2); strokeAndFill('#d97706', 4.5);
+                ctx.beginPath(); ctx.ellipse(0, 0, 17, 11, 0, 0, Math.PI * 2); strokeAndFill('#facc15', 4.5);
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(86, 355);
+                ctx.rotate(-0.35);
+                ctx.beginPath(); ctx.roundRect(-32, -42, 64, 84, 10); strokeAndFill('#a78bfa', 5);
+                ctx.beginPath(); ctx.roundRect(-23, -32, 46, 18, 4); strokeAndFill('#bbf7d0', 3.5);
+                const btnColors = ['#f87171','#60a5fa','#facc15','#34d399','#f472b6','#fb923c','#60a5fa','#a78bfa','#fb923c'];
+                let bi = 0;
+                for (let r = 0; r < 3; r++) {
+                    for (let c = 0; c < 3; c++) {
+                        ctx.beginPath();
+                        ctx.roundRect(-22 + c * 16, -7 + r * 14, 12, 10, 2);
+                        strokeAndFill(btnColors[bi++], 2.8);
+                    }
+                }
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(402, 82);
+                ctx.rotate(0.15);
+                ctx.beginPath(); ctx.moveTo(0, -26); ctx.lineTo(26, 20); ctx.lineTo(-26, 20); ctx.closePath();
+                strokeAndFill('#60a5fa', 5);
+                ctx.restore();
+
+                ctx.beginPath(); ctx.arc(454, 106, 24, 0, Math.PI * 2); strokeAndFill('#facc15', 5);
+
+                ctx.save();
+                ctx.translate(414, 152);
+                ctx.beginPath(); ctx.arc(0, 0, 21, 0, Math.PI * 2); strokeAndFill('#ef4444', 4.5);
+                ctx.fillStyle = '#991b1b'; ctx.font = '900 20px "Noto Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('$', 0, 1);
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(454, 202);
+                ctx.rotate(0.08);
+                ctx.beginPath(); ctx.roundRect(-22, -22, 44, 44, 6); strokeAndFill('#4ade80', 5);
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(416, 260);
+                ctx.rotate(0.08);
+                ctx.beginPath();
+                ctx.roundRect(-24, -7, 48, 14, 5);
+                strokeAndFill('#ef4444', 5);
+                ctx.beginPath();
+                ctx.roundRect(-7, -24, 14, 48, 5);
+                strokeAndFill('#ef4444', 5);
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(-10, -5, 20, 10);
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(442, 342);
+                ctx.font = '900 62px "Jua", "NanumSquareRound", sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.lineWidth = 9; ctx.strokeStyle = '#ca8a04';
+                ctx.strokeText('3', 0, 0);
+                ctx.fillStyle = '#facc15';
+                ctx.fillText('3', 0, 0);
+                ctx.restore();
+
+                ctx.beginPath();
+                ctx.moveTo(155, 195);
+                ctx.bezierCurveTo(138, 100, 205, 52, 265, 52);
+                ctx.bezierCurveTo(335, 52, 392, 105, 382, 205);
+                ctx.bezierCurveTo(405, 268, 412, 345, 384, 396);
+                ctx.bezierCurveTo(368, 412, 345, 395, 342, 372);
+                ctx.lineTo(188, 372);
+                ctx.bezierCurveTo(182, 398, 158, 412, 144, 392);
+                ctx.bezierCurveTo(118, 342, 128, 262, 155, 195);
+                strokeAndFill('#784b32', 7);
+
+                ctx.beginPath();
+                ctx.moveTo(182, 468); ctx.lineTo(342, 468); ctx.lineTo(352, 518); ctx.lineTo(172, 518); ctx.closePath();
+                strokeAndFill('#334155', 7);
+
+                ctx.beginPath();
+                ctx.moveTo(168, 326);
+                ctx.bezierCurveTo(140, 385, 132, 455, 130, 518);
+                ctx.lineTo(178, 518);
+                ctx.lineTo(188, 415);
+                strokeAndFill('#2b7de9', 7);
+
+                ctx.beginPath();
+                ctx.moveTo(356, 326);
+                ctx.bezierCurveTo(384, 385, 392, 455, 394, 518);
+                ctx.lineTo(346, 518);
+                ctx.lineTo(336, 415);
+                strokeAndFill('#2b7de9', 7);
+
+                ctx.beginPath();
+                ctx.moveTo(174, 322);
+                ctx.quadraticCurveTo(262, 308, 350, 322);
+                ctx.lineTo(344, 470);
+                ctx.lineTo(180, 470);
+                ctx.closePath();
+                strokeAndFill('#2b7de9', 7);
+
+                ctx.beginPath(); ctx.moveTo(181, 452); ctx.lineTo(343, 452); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(262, 380); ctx.lineTo(262, 470); ctx.stroke();
+                [396, 422, 444].forEach(by => {
+                    ctx.beginPath(); ctx.arc(251, by, 5, 0, Math.PI * 2); strokeAndFill('#1d4ed8', 3.5);
+                });
+
+                ctx.beginPath();
+                ctx.moveTo(216, 314); ctx.lineTo(308, 314); ctx.lineTo(262, 385); ctx.closePath();
+                strokeAndFill('#facc15', 6.5);
+                ctx.beginPath();
+                ctx.moveTo(216, 314); ctx.lineTo(234, 344); ctx.lineTo(262, 330); ctx.lineTo(290, 344); ctx.lineTo(308, 314);
+                strokeAndFill('#fde047', 5.5);
+
+                ctx.beginPath(); ctx.arc(305, 378, 25, 0, Math.PI * 2); strokeAndFill('#ef4444', 6);
+                drawStarShape(ctx, 305, 378, 5, 16, 7.5, '#facc15', outline, 4);
+
+                ctx.beginPath(); ctx.rect(244, 286, 36, 34); strokeAndFill('#fde0cc', 6.5);
+                ctx.beginPath(); ctx.arc(348, 214, 15, 0, Math.PI * 2); strokeAndFill('#fde0cc', 6.5);
+
+                ctx.beginPath();
+                ctx.moveTo(182, 155);
+                ctx.bezierCurveTo(182, 102, 342, 102, 342, 155);
+                ctx.lineTo(342, 224);
+                ctx.bezierCurveTo(342, 276, 302, 298, 262, 298);
+                ctx.bezierCurveTo(222, 298, 182, 276, 182, 224);
+                ctx.closePath();
+                strokeAndFill('#fde0cc', 7);
+
+                ctx.strokeStyle = outline; ctx.lineWidth = 5;
+                ctx.beginPath(); ctx.arc(224, 184, 16, Math.PI * 1.15, Math.PI * 1.75); ctx.stroke();
+                ctx.beginPath(); ctx.arc(300, 184, 16, Math.PI * 1.25, Math.PI * 1.85); ctx.stroke();
+
+                [224, 300].forEach(ex => {
+                    ctx.beginPath(); ctx.ellipse(ex, 212, 14, 17, 0, 0, Math.PI * 2); strokeAndFill('#2c1e1e', 4.5);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath(); ctx.arc(ex - 4.5, 205, 5.5, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(ex + 5, 217, 2.8, 0, Math.PI * 2); ctx.fill();
+                });
+
+                ctx.fillStyle = 'rgba(248, 113, 113, 0.55)';
+                ctx.beginPath(); ctx.ellipse(202, 234, 13, 7, 0, 0, Math.PI * 2); ctx.ellipse(322, 234, 13, 7, 0, 0, Math.PI * 2); ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(244, 244);
+                ctx.quadraticCurveTo(262, 248, 280, 244);
+                ctx.quadraticCurveTo(278, 270, 262, 270);
+                ctx.quadraticCurveTo(246, 270, 244, 244);
+                strokeAndFill('#e11d48', 5);
+
+                ctx.beginPath();
+                ctx.moveTo(182, 215);
+                ctx.bezierCurveTo(164, 198, 152, 185, 148, 172);
+                ctx.bezierCurveTo(166, 175, 180, 168, 188, 150);
+                ctx.bezierCurveTo(205, 92, 255, 68, 292, 68);
+                ctx.bezierCurveTo(342, 68, 372, 112, 368, 195);
+                ctx.bezierCurveTo(352, 165, 332, 145, 302, 132);
+                ctx.bezierCurveTo(286, 156, 252, 166, 214, 162);
+                ctx.bezierCurveTo(205, 182, 194, 202, 182, 215);
+                strokeAndFill('#784b32', 7);
+
+                ctx.save();
+                ctx.translate(338, 142);
+                ctx.rotate(-0.32);
+                ctx.beginPath(); ctx.roundRect(-22, -4, 44, 9, 4); strokeAndFill('#38bdf8', 4);
+                drawStarShape(ctx, -11, -3, 5, 13, 6, '#facc15', outline, 3.5);
+                ctx.beginPath();
+                ctx.moveTo(11, 5);
+                ctx.bezierCurveTo(0, -3, 2, -14, 11, -8);
+                ctx.bezierCurveTo(20, -14, 22, -3, 11, 5);
+                strokeAndFill('#f472b6', 3.5);
+                ctx.restore();
+
+            } else {
+                // --- 남자 선생님 폴백 ---
+                ctx.save();
+                ctx.translate(108, 115);
+                ctx.beginPath(); ctx.arc(0, 0, 42, 0, Math.PI * 2); strokeAndFill('#4ade80', 6);
+                ctx.beginPath(); ctx.arc(0, 0, 31, 0, Math.PI * 2); strokeAndFill('#ffffff', 4.5);
+                ctx.fillStyle = outline;
+                for (let i = 0; i < 12; i++) {
+                    const a = (i * Math.PI) / 6;
+                    ctx.beginPath(); ctx.arc(Math.cos(a) * 24, Math.sin(a) * 24, 1.8, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.strokeStyle = outline; ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-4, -18); ctx.moveTo(0, 0); ctx.lineTo(15, 7); ctx.stroke();
+                ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(106, 218);
+                ctx.rotate(-0.18);
+                ctx.beginPath(); ctx.roundRect(-25, -7, 50, 14, 5); strokeAndFill('#ef4444', 5);
+                ctx.beginPath(); ctx.roundRect(-7, -25, 14, 50, 5); strokeAndFill('#ef4444', 5);
+                ctx.fillStyle = '#ef4444'; ctx.fillRect(-10, -5, 20, 10);
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(76, 326);
+                for (let s = 0; s < 4; s++) {
+                    ctx.beginPath(); ctx.ellipse(0, -s * 8, 18, 8, 0, 0, Math.PI * 2); strokeAndFill('#facc15', 4);
+                }
+                ctx.beginPath(); ctx.ellipse(-34, 12, 16, 7, 0, 0, Math.PI * 2); strokeAndFill('#facc15', 4);
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(64, 384);
+                ctx.rotate(-0.35);
+                ctx.beginPath(); ctx.roundRect(-36, -18, 72, 36, 4); strokeAndFill('#86efac', 4.5);
+                ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); strokeAndFill('#4ade80', 3);
+                ctx.fillStyle = '#15803d'; ctx.font = '900 13px "Noto Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('$', 0, 1);
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(394, 124);
+                ctx.rotate(-0.08);
+                ctx.font = '900 66px "Jua", "NanumSquareRound", sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.lineWidth = 9; ctx.strokeStyle = '#ca8a04';
+                ctx.strokeText('3', 0, 0);
+                ctx.fillStyle = '#facc15';
+                ctx.fillText('3', 0, 0);
+                ctx.restore();
+
+                ctx.beginPath(); ctx.arc(462, 155, 23, 0, Math.PI * 2); strokeAndFill('#ef4444', 5);
+
+                ctx.save();
+                ctx.translate(414, 224);
+                ctx.rotate(0.18);
+                ctx.beginPath(); ctx.moveTo(0, -25); ctx.lineTo(26, 20); ctx.lineTo(-26, 20); ctx.closePath();
+                strokeAndFill('#3b82f6', 5);
+                ctx.beginPath(); ctx.moveTo(0, -9); ctx.lineTo(11, 11); ctx.lineTo(-11, 11); ctx.closePath();
+                strokeAndFill('#ffffff', 4);
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(454, 304);
+                ctx.rotate(0.24);
+                ctx.beginPath(); ctx.roundRect(-30, -38, 60, 76, 9); strokeAndFill('#fb923c', 5);
+                ctx.beginPath(); ctx.roundRect(-21, -29, 42, 16, 3); strokeAndFill('#bbf7d0', 3.5);
+                for (let r = 0; r < 3; r++) {
+                    for (let c = 0; c < 3; c++) {
+                        ctx.beginPath(); ctx.roundRect(-20 + c * 15, -6 + r * 13, 11, 9, 2);
+                        strokeAndFill('#94a3b8', 2.8);
+                    }
+                }
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(458, 396);
+                ctx.rotate(0.12);
+                ctx.beginPath(); ctx.roundRect(-21, -21, 42, 42, 6); strokeAndFill('#a855f7', 5);
+                ctx.restore();
+
+                ctx.beginPath();
+                ctx.moveTo(176, 466); ctx.lineTo(340, 466); ctx.lineTo(348, 518); ctx.lineTo(168, 518); ctx.closePath();
+                strokeAndFill('#334155', 7);
+
+                ctx.beginPath();
+                ctx.moveTo(164, 318);
+                ctx.bezierCurveTo(136, 380, 128, 450, 126, 518);
+                ctx.lineTo(174, 518);
+                ctx.lineTo(184, 412);
+                strokeAndFill('#2b7de9', 7);
+
+                ctx.beginPath();
+                ctx.moveTo(352, 318);
+                ctx.bezierCurveTo(380, 380, 388, 450, 390, 518);
+                ctx.lineTo(342, 518);
+                ctx.lineTo(332, 412);
+                strokeAndFill('#2b7de9', 7);
+
+                ctx.beginPath();
+                ctx.moveTo(170, 315);
+                ctx.quadraticCurveTo(258, 302, 346, 315);
+                ctx.lineTo(340, 468);
+                ctx.lineTo(176, 468);
+                ctx.closePath();
+                strokeAndFill('#2b7de9', 7);
+
+                ctx.beginPath(); ctx.moveTo(177, 450); ctx.lineTo(339, 450); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(258, 376); ctx.lineTo(258, 468); ctx.stroke();
+                [394, 420, 442].forEach(by => {
+                    ctx.beginPath(); ctx.arc(246, by, 5, 0, Math.PI * 2); strokeAndFill('#1d4ed8', 3.5);
+                });
+
+                ctx.beginPath();
+                ctx.moveTo(212, 308); ctx.lineTo(304, 308); ctx.lineTo(258, 380); ctx.closePath();
+                strokeAndFill('#facc15', 6.5);
+                ctx.beginPath();
+                ctx.moveTo(212, 308); ctx.lineTo(230, 338); ctx.lineTo(258, 324); ctx.lineTo(286, 338); ctx.lineTo(304, 308);
+                strokeAndFill('#fde047', 5.5);
+
+                ctx.beginPath(); ctx.arc(300, 368, 25, 0, Math.PI * 2); strokeAndFill('#ef4444', 6);
+                drawStarShape(ctx, 300, 368, 5, 16, 7.5, '#facc15', outline, 4);
+
+                ctx.beginPath(); ctx.rect(240, 282, 36, 32); strokeAndFill('#fbd5be', 6.5);
+                ctx.beginPath(); ctx.arc(178, 206, 17, 0, Math.PI * 2); strokeAndFill('#fbd5be', 6.5);
+                ctx.beginPath(); ctx.arc(338, 206, 17, 0, Math.PI * 2); strokeAndFill('#fbd5be', 6.5);
+
+                ctx.beginPath();
+                ctx.moveTo(182, 150);
+                ctx.bezierCurveTo(182, 96, 334, 96, 334, 150);
+                ctx.lineTo(334, 222);
+                ctx.bezierCurveTo(334, 274, 296, 294, 258, 294);
+                ctx.bezierCurveTo(220, 294, 182, 274, 182, 222);
+                ctx.closePath();
+                strokeAndFill('#fbd5be', 7);
+
+                ctx.strokeStyle = outline; ctx.lineWidth = 4.5;
+                ctx.beginPath(); ctx.arc(224, 176, 13, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
+                ctx.beginPath(); ctx.arc(292, 176, 13, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
+
+                ctx.fillStyle = outline;
+                ctx.beginPath(); ctx.ellipse(224, 202, 7.5, 9.5, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(292, 202, 7.5, 9.5, 0, 0, Math.PI * 2); ctx.fill();
+
+                ctx.strokeStyle = outline; ctx.lineWidth = 5.5;
+                ctx.beginPath(); ctx.arc(224, 203, 25, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(292, 203, 25, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(249, 201); ctx.quadraticCurveTo(258, 197, 267, 201); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(182, 198); ctx.lineTo(199, 201); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(317, 201); ctx.lineTo(334, 198); ctx.stroke();
+
+                ctx.fillStyle = 'rgba(248, 113, 113, 0.5)';
+                ctx.beginPath(); ctx.ellipse(202, 228, 12, 6.5, 0, 0, Math.PI * 2); ctx.ellipse(314, 228, 12, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(240, 242);
+                ctx.quadraticCurveTo(258, 246, 276, 242);
+                ctx.quadraticCurveTo(274, 266, 258, 266);
+                ctx.quadraticCurveTo(242, 266, 240, 242);
+                strokeAndFill('#e11d48', 5);
+
+                ctx.beginPath();
+                ctx.moveTo(182, 186);
+                ctx.bezierCurveTo(172, 132, 192, 86, 224, 68);
+                ctx.lineTo(226, 82);
+                ctx.lineTo(248, 72);
+                ctx.bezierCurveTo(265, 86, 295, 88, 318, 96);
+                ctx.bezierCurveTo(342, 112, 346, 148, 336, 186);
+                ctx.bezierCurveTo(330, 154, 312, 142, 282, 142);
+                ctx.bezierCurveTo(248, 142, 218, 142, 202, 130);
+                ctx.bezierCurveTo(190, 142, 184, 162, 182, 186);
+                strokeAndFill('#6b442a', 7);
+            }
+
+            return canvas.toDataURL('image/png');
+        }
+
+        function drawStarShape(ctx, cx, cy, spikes, outerR, innerR, fill, stroke, lineWidth) {
+            let rot = (Math.PI / 2) * 3;
+            const step = Math.PI / spikes;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - outerR);
+            for (let i = 0; i < spikes; i++) {
+                ctx.lineTo(cx + Math.cos(rot) * outerR, cy + Math.sin(rot) * outerR);
+                rot += step;
+                ctx.lineTo(cx + Math.cos(rot) * innerR, cy + Math.sin(rot) * innerR);
+                rot += step;
+            }
+            ctx.closePath();
+            ctx.fillStyle = fill;
+            ctx.fill();
+            ctx.strokeStyle = stroke;
+            ctx.lineWidth = lineWidth;
+            ctx.stroke();
+        }
+
+        function initEmbeddedTeacherPortraits() {
+            EMBEDDED_TEACHER_DATA_URLS.male = buildEmbeddedTeacherPortraitDataUrl('male');
+            EMBEDDED_TEACHER_DATA_URLS.female = buildEmbeddedTeacherPortraitDataUrl('female');
+        }
+
+        // Imgur 직접 링크 우선 로드 -> 로컬 파일 -> 오프라인 내장 이미지 순차 폴백
+        function handleMascotImgError(imgEl, gender, attemptIdx) {
+            if (!imgEl) return;
+            const candidates = GENERATED_MASCOT_CANDIDATES[gender] || [];
+            const nextIdx = (attemptIdx || 0) + 1;
+            if (nextIdx < candidates.length) {
+                imgEl.onerror = function() { handleMascotImgError(imgEl, gender, nextIdx); };
+                imgEl.src = candidates[nextIdx];
+                return;
+            }
+            imgEl.onerror = null;
+            if (!EMBEDDED_TEACHER_DATA_URLS[gender]) {
+                EMBEDDED_TEACHER_DATA_URLS[gender] = buildEmbeddedTeacherPortraitDataUrl(gender);
+            }
+            imgEl.src = EMBEDDED_TEACHER_DATA_URLS[gender];
+        }
+
+        function getTeacherMascotInnerHtml() {
+            if (state.teacherMascotGender === 'custom' && state.customMascotDataUrl) {
+                return `<img src="${state.customMascotDataUrl}" alt="선생님 캐릭터">`;
+            }
+
+            const gender = state.teacherMascotGender === 'female' ? 'female' : 'male';
+            const candidates = GENERATED_MASCOT_CANDIDATES[gender];
+            const firstSrc = candidates[0];
+            const altText = gender === 'female' ? '여자 선생님 캐릭터' : '남자 선생님 캐릭터';
+
+            return `<img src="${firstSrc}" referrerpolicy="no-referrer" alt="${altText}" onerror="handleMascotImgError(this, '${gender}', 0)">`;
+        }
+
+        // =========================================================================
         // 정자체 단일 획 점선(Single-Stroke Dashed) SVG 렌더링 엔진
-        // 제시된 이미지('하나, 둘, 셋, 넷, 다섯' 및 '1, 2, 3, 4, 5')와 동일하게
-        // 글자 중심선 획 자체가 가느다란 점선 한 줄로 그려지도록 구현
         // =========================================================================
         const DIGIT_STROKES = {
             '0': ['M 50 10 C 74 10 82 30 82 50 C 82 70 74 90 50 90 C 26 90 18 70 18 50 C 18 30 26 10 50 10'],
@@ -1017,7 +1500,6 @@
         const JUNG_LIST = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
         const JONG_LIST = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
 
-        // 좌표 변환 헬퍼: 정규화된 (0~100) 좌표를 목표 박스 (x, y, w, h)로 사상
         function mapCoord(pt, box) {
             return `${+(box.x + (pt[0] / 100) * box.w).toFixed(1)} ${+(box.y + (pt[1] / 100) * box.h).toFixed(1)}`;
         }
@@ -1234,7 +1716,7 @@
             const vertVowels = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅣ'];
 
             const topH = hasJong ? 58 : 88;
-            const topY = hasJong ? 6 : 6;
+            const topY = 6;
             const paths = [];
 
             if (vertVowels.includes(jung)) {
@@ -1248,7 +1730,6 @@
                 paths.push(...buildConsonantPaths(cho, choBox));
                 paths.push(...buildVowelPaths(jung, { x: 0, y: 0, w: 0, h: 0 }, jungBBox));
             } else {
-                // 복합 모음 (ㅘ, ㅝ, ㅢ 등)
                 const choBox = { x: 10, y: topY, w: 48, h: topH * 0.54 };
                 const jungBBox = { x: 6, y: topY + topH * 0.54, w: 66, h: topH * 0.46 };
                 const jungVBox = { x: 62, y: topY, w: 32, h: topH };
@@ -1281,7 +1762,6 @@
             return null;
         }
 
-        // 모든 덮어쓰기 텍스트를 이미지와 동일한 단일 획 점선(또는 단일 실선) 정자체 SVG로 렌더링
         function renderTraceableTextHtml(text, fontPx, isDotted, extraClass = 'info-trace-text') {
             const safeText = escapeHtml(text);
             if (!text) return '';
@@ -1291,7 +1771,6 @@
             const charGap = Math.max(2, Math.round(fontPx * 0.08));
             const heightPx = Math.ceil(fontPx * 1.15);
 
-            // 이미지와 동일한 가느다란 단일 획 두께 및 짧은 점선 간격 설정
             const strokeWidth = isLarge
                 ? Math.max(1.6, +(fontPx * 0.042).toFixed(2))
                 : Math.max(1.3, +(fontPx * 0.055).toFixed(2));
@@ -1338,125 +1817,7 @@
                 `;
             }
 
-            // 영문 등 미지원 특수문자가 섞인 경우를 위한 안전 폴백
             return `<span class="${extraClass}">${safeText}</span>`;
-        }
-
-        // 이미지 파일을 찾을 수 없을 때만 동작하는 내장 벡터 폴백
-        function getFallbackTeacherSvg(gender) {
-            const richEducationalBgSvg = `
-                <g transform="translate(34, 42) rotate(-10)">
-                    <circle cx="0" cy="0" r="19" fill="#fef9c3" stroke="#232852" stroke-width="2.6"/>
-                    <circle cx="0" cy="0" r="14.5" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-                    <line x1="0" y1="0" x2="0" y2="-9" stroke="#ef4444" stroke-width="2.4" stroke-linecap="round"/>
-                    <line x1="0" y1="0" x2="7.5" y2="3" stroke="#232852" stroke-width="2.4" stroke-linecap="round"/>
-                    <circle cx="0" cy="0" r="2.2" fill="#232852"/>
-                </g>
-                <g transform="translate(22, 102) rotate(-14)">
-                    <rect x="-11" y="-3.5" width="22" height="7" rx="3.5" fill="#ef4444" stroke="#232852" stroke-width="2.2"/>
-                    <rect x="-3.5" y="-11" width="7" height="22" rx="3.5" fill="#ef4444" stroke="#232852" stroke-width="2.2"/>
-                </g>
-                <rect x="44" y="75" width="14" height="14" rx="2.5" fill="#c084fc" stroke="#232852" stroke-width="2.2" transform="rotate(15 51 82)"/>
-                <g transform="translate(30, 152) rotate(-12)">
-                    <rect x="-20" y="-11" width="38" height="22" rx="3.5" fill="#86efac" stroke="#232852" stroke-width="2.4"/>
-                    <circle cx="-1" cy="0" r="5.5" fill="#bbf7d0" stroke="#232852" stroke-width="1.8"/>
-                    <text x="-1" y="2.8" text-anchor="middle" font-size="8" font-weight="900" fill="#15803d">₩</text>
-                    <circle cx="15" cy="8" r="8.5" fill="#facc15" stroke="#232852" stroke-width="2.2"/>
-                    <text x="15" y="11" text-anchor="middle" font-size="8.5" font-weight="900" fill="#92400e">100</text>
-                </g>
-                <text x="202" y="46" font-family="'Jua', 'NanumSquareRound', sans-serif" font-size="27" font-weight="900"
-                    fill="#facc15" stroke="#232852" stroke-width="2.6" paint-order="stroke fill" transform="rotate(8 202 36)">3</text>
-                <circle cx="176" cy="30" r="8" fill="#f472b6" stroke="#232852" stroke-width="2.2"/>
-                <g transform="translate(212, 82) rotate(12)">
-                    <polygon points="0,-13 -13,10 13,10" fill="#60a5fa" stroke="#232852" stroke-width="2.5" stroke-linejoin="round"/>
-                </g>
-                <g transform="translate(208, 146) rotate(10)">
-                    <rect x="-16" y="-21" width="32" height="42" rx="5" fill="#e2e8f0" stroke="#232852" stroke-width="2.5"/>
-                    <rect x="-11" y="-16" width="22" height="9" rx="2" fill="#bae6fd" stroke="#232852" stroke-width="1.8"/>
-                    <circle cx="-7" cy="-1" r="2.2" fill="#232852"/>
-                    <circle cx="0" cy="-1" r="2.2" fill="#232852"/>
-                    <circle cx="7" cy="-1" r="2.2" fill="#232852"/>
-                    <circle cx="-7" cy="6" r="2.2" fill="#232852"/>
-                    <circle cx="0" cy="6" r="2.2" fill="#232852"/>
-                    <circle cx="7" cy="6" r="2.2" fill="#ef4444"/>
-                    <circle cx="-7" cy="13" r="2.2" fill="#232852"/>
-                    <circle cx="0" cy="13" r="2.2" fill="#232852"/>
-                    <circle cx="7" cy="13" r="2.2" fill="#22c55e"/>
-                </g>
-            `;
-
-            if (gender === 'female') {
-                return `
-                    <svg viewBox="0 0 245 220" xmlns="http://www.w3.org/2000/svg">
-                        ${richEducationalBgSvg}
-                        <path d="M 76 80 C 66 42, 174 42, 164 80 C 174 112, 178 148, 168 176 C 162 184, 152 178, 150 168 L 90 168 C 88 178, 78 184, 72 176 C 62 148, 66 112, 76 80 Z"
-                            fill="#6b442a" stroke="#232852" stroke-width="3.4" stroke-linejoin="round"/>
-                        <circle cx="83" cy="95" r="7.5" fill="#fde0cc" stroke="#232852" stroke-width="3"/>
-                        <circle cx="157" cy="95" r="7.5" fill="#fde0cc" stroke="#232852" stroke-width="3"/>
-                        <path d="M 73 198 C 69 164, 77 135, 98 130 L 142 130 C 163 135, 171 164, 167 198 Z"
-                            fill="#2589f5" stroke="#232852" stroke-width="3.5" stroke-linejoin="round"/>
-                        <path d="M 84 156 L 81 196" stroke="#232852" stroke-width="3.2" stroke-linecap="round"/>
-                        <path d="M 156 156 L 159 196" stroke="#232852" stroke-width="3.2" stroke-linecap="round"/>
-                        <polygon points="100,130 140,130 120,162" fill="#fde047" stroke="#232852" stroke-width="3.2" stroke-linejoin="round"/>
-                        <polyline points="100,130 109,144 120,137 131,144 140,130" fill="#fef08a" stroke="#232852" stroke-width="2.8" stroke-linejoin="round"/>
-                        <line x1="120" y1="137" x2="120" y2="198" stroke="#232852" stroke-width="3.2"/>
-                        <circle cx="141" cy="162" r="13.5" fill="#ef4444" stroke="#232852" stroke-width="3"/>
-                        <polygon points="141,152.5 143.8,158.2 150,159.1 145.5,163.5 146.6,169.7 141,166.8 135.4,169.7 136.5,163.5 132,159.1 138.2,158.2"
-                            fill="#facc15" stroke="#232852" stroke-width="2" stroke-linejoin="round"/>
-                        <path d="M 86 64 C 86 48, 154 48, 154 64 L 154 96 C 154 118, 136 130, 120 130 C 104 130, 86 118, 86 96 Z"
-                            fill="#fde0cc" stroke="#232852" stroke-width="3.5" stroke-linejoin="round"/>
-                        <ellipse cx="103" cy="92" rx="5.5" ry="6.8" fill="#232852"/>
-                        <circle cx="101" cy="89.5" r="2.3" fill="#ffffff"/>
-                        <ellipse cx="137" cy="92" rx="5.5" ry="6.8" fill="#232852"/>
-                        <circle cx="135" cy="89.5" r="2.3" fill="#ffffff"/>
-                        <path d="M 112 108 Q 120 119 128 108 Z" fill="#f43f5e" stroke="#232852" stroke-width="2.6" stroke-linejoin="round"/>
-                        <path d="M 82 96 C 80 54, 102 45, 120 45 C 138 45, 160 54, 158 96 C 154 78, 144 68, 128 63 C 122 72, 110 76, 94 74 C 88 80, 85 88, 82 96 Z"
-                            fill="#6b442a" stroke="#232852" stroke-width="3.4" stroke-linejoin="round"/>
-                    </svg>
-                `;
-            }
-
-            return `
-                <svg viewBox="0 0 245 220" xmlns="http://www.w3.org/2000/svg">
-                    ${richEducationalBgSvg}
-                    <circle cx="84" cy="95" r="8" fill="#fbd2b9" stroke="#232852" stroke-width="3.2"/>
-                    <circle cx="158" cy="95" r="8" fill="#fbd2b9" stroke="#232852" stroke-width="3.2"/>
-                    <path d="M 73 198 C 68 164, 77 134, 98 130 L 144 130 C 165 134, 174 164, 169 198 Z"
-                        fill="#2589f5" stroke="#232852" stroke-width="3.5" stroke-linejoin="round"/>
-                    <polygon points="100,130 142,130 121,163" fill="#fde047" stroke="#232852" stroke-width="3.2" stroke-linejoin="round"/>
-                    <circle cx="143" cy="163" r="14" fill="#ef4444" stroke="#232852" stroke-width="3"/>
-                    <polygon points="143,153 145.9,158.9 152.4,159.8 147.7,164.4 148.8,170.8 143,167.8 137.2,170.8 138.3,164.4 133.6,159.8 140.1,158.9"
-                        fill="#facc15" stroke="#232852" stroke-width="2" stroke-linejoin="round"/>
-                    <path d="M 87 64 C 87 48, 155 48, 155 64 L 155 96 C 155 118, 137 130, 121 130 C 105 130, 87 118, 87 96 Z"
-                        fill="#fbd2b9" stroke="#232852" stroke-width="3.5" stroke-linejoin="round"/>
-                    <ellipse cx="104.5" cy="91" rx="3.9" ry="4.9" fill="#232852"/>
-                    <ellipse cx="137.5" cy="91" rx="3.9" ry="4.9" fill="#232852"/>
-                    <circle cx="104.5" cy="91.5" r="13" fill="none" stroke="#232852" stroke-width="3"/>
-                    <circle cx="137.5" cy="91.5" r="13" fill="none" stroke="#232852" stroke-width="3"/>
-                    <path d="M 117.5 90.5 Q 121 88 124.5 90.5" fill="none" stroke="#232852" stroke-width="2.8"/>
-                    <path d="M 113 108 Q 121 119 129 108 Z" fill="#ef4444" stroke="#232852" stroke-width="2.8" stroke-linejoin="round"/>
-                    <path d="M 87 83 C 83 58, 91 39, 105 31 C 106 37, 110 39, 115 34 C 117 40, 123 42, 134 41 C 152 42, 160 58, 155 83 C 152 67, 143 61, 129 61 C 115 61, 101 61, 95 55 C 90 61, 88 71, 87 83 Z"
-                        fill="#6b442a" stroke="#232852" stroke-width="3.5" stroke-linejoin="round"/>
-                </svg>
-            `;
-        }
-
-        function handleMascotImgError(imgEl, gender) {
-            if (!imgEl || !imgEl.parentElement) return;
-            imgEl.parentElement.innerHTML = getFallbackTeacherSvg(gender);
-        }
-
-        // 생성한 이미지 파일을 변화없이 그대로 삽입하는 마스코트 렌더링 함수
-        function getTeacherMascotInnerHtml() {
-            if (state.teacherMascotGender === 'custom' && state.customMascotDataUrl) {
-                return `<img src="${state.customMascotDataUrl}" alt="선생님 캐릭터">`;
-            }
-
-            const gender = state.teacherMascotGender === 'female' ? 'female' : 'male';
-            const imgSrc = GENERATED_MASCOT_FILES[gender];
-            const altText = gender === 'female' ? '여자 선생님 캐릭터' : '남자 선생님 캐릭터';
-
-            return `<img src="${imgSrc}" alt="${altText}" onerror="handleMascotImgError(this, '${gender}')">`;
         }
 
         function onTeacherMascotToggle() {
@@ -1528,7 +1889,6 @@
             onArithFontScaleChange(current + delta);
         }
 
-        // 퍼즐 조각(격자) 내 숫자 크기 조절 핸들러
         function onBadgeFontScaleChange(val) {
             const clamped = Math.max(60, Math.min(200, parseInt(val) || 100));
             document.getElementById('badgeFontScale').value = clamped;
@@ -1647,7 +2007,6 @@
                 .replace(/'/g, '&#39;');
         }
 
-        // 메인 제목을 어절별로 다채로운 색상으로 렌더링하는 헬퍼
         function buildColorfulTitleHtml(titleText) {
             const words = titleText.split(/\s+/).filter(Boolean);
             if (words.length === 0) return '';
@@ -3108,7 +3467,6 @@
             `;
         }
 
-        // 입력된 날짜 문자열에서 월/일 숫자만 추출 ("월", "일"은 고정 텍스트로 분리)
         function parseMonthDayNumbers(rawDateStr) {
             if (!rawDateStr) return { month: '', day: '', hasValue: false };
             const nums = rawDateStr.match(/\d+/g);
@@ -3175,7 +3533,6 @@
                 const boxAnswerFontPx = Math.floor(boxHeightNum * 0.78);
                 const boxAnswerFontSize = `${boxAnswerFontPx}px`;
 
-                // 퍼즐 격자(조각) 내 숫자 크기 및 배지 크기 계산 (사용자 배율 적용)
                 const isCornerPos = state.badgePosition !== 'center';
                 const baseBadgeSizePx = isCornerPos
                     ? (maxDim <= 4 ? 28 : maxDim === 5 ? 23 : 19)
@@ -3200,7 +3557,6 @@
                 const isAllMatchMode = state.problems.length > 0 && state.problems.every(p => p.isMatchOnly);
                 const isConcreteMode = isAllMatchMode && state.matchDisplayType === 'concrete';
 
-                // 오른쪽 하단 선생님 마스코트 HTML 생성기
                 const buildCornerMascotHtml = () => {
                     if (!showTeacherMascot) return '';
                     const size = Math.round(98 * mascotScale);
@@ -3219,7 +3575,6 @@
                     return `<img src="${croppedUrl}" class="piece-img" style="width: ${widthPct}%; height: ${heightPct}%; left: ${leftPct}%; top: ${topPct}%;" alt="">`;
                 };
 
-                // 우측 상단 기입란: 이름 뒤 공백(기입 박스)을 넓혀 윗줄 날짜 전체 폭과 정확히 동일하게 맞춤
                 const buildStudentInfoHtml = () => {
                     if (!showInfo) return '';
                     const infoFontPx = Math.round(13 * infoFontScale);
@@ -3259,7 +3614,6 @@
                     `;
                 };
 
-                // 좌측: 윗줄 다채로운 메인제목 / 아랫줄(구분선 바로 위) 노란퍼즐배지 + 조화로운 카테고리 배지
                 const buildHeader = () => {
                     let modeBadgeHtml = '';
                     if (isConcreteMode) {
