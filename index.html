@@ -197,7 +197,7 @@
             justify-content: center;
         }
 
-        /* 구체물(이모지) 개수 세기 배치 컨테이너 */
+        /* 구체물(이모지/업로드 이미지) 개수 세기 배치 컨테이너 */
         .concrete-emoji-grid {
             display: flex;
             flex-wrap: wrap;
@@ -209,6 +209,12 @@
             padding: 4px;
             box-sizing: border-box;
             line-height: 1.15;
+        }
+
+        .concrete-custom-item-img {
+            object-fit: contain;
+            display: block;
+            user-select: none;
         }
 
         /* 상단 테두리와 빨간 사각형 사이의 중간 지점에 문제를 배치하는 영역 */
@@ -358,11 +364,11 @@
             text-underline-offset: 3px;
         }
 
-        /* 교사용 정답지 오버레이 */
-        .teacher-overlay {
+        /* 퍼즐 이미지 미리보기 오버레이 (연산이 어려운 학생용 그림 힌트) */
+        .puzzle-preview-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(255, 255, 255, 0.82);
+            background: rgba(255, 255, 255, 0.56);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -370,6 +376,13 @@
             font-weight: 900;
             color: #000;
             z-index: 5;
+        }
+
+        /* 퍼즐 미리보기 켜졌을 때 문제 식/숫자 가독성 확보용 흰색 테두리 */
+        .puzzle-hint-stroke {
+            -webkit-text-stroke: 3px #ffffff;
+            paint-order: stroke fill;
+            text-shadow: 0 0 5px #ffffff, 0 1px 2px rgba(0,0,0,0.35);
         }
 
         /* 중앙 알림 모달 팝업 애니메이션 */
@@ -445,8 +458,8 @@
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-indigo-500">
             </div>
 
-            <!-- 날짜 / 이름 각각 개별 표시 체크박스 + 교사용 정답지 미리보기 -->
-            <div class="flex items-center justify-between text-xs text-gray-600 gap-2 flex-wrap">
+            <!-- 날짜 / 이름 각각 개별 표시 체크박스 -->
+            <div class="flex items-center justify-between text-xs text-gray-600 gap-2 flex-wrap mb-2">
                 <div class="flex items-center gap-3">
                     <label class="flex items-center gap-1.5 cursor-pointer font-bold text-gray-700">
                         <input type="checkbox" id="showDateInfo" checked onchange="onStudentInfoToggle()" class="rounded text-indigo-600">
@@ -457,14 +470,33 @@
                         <span>✏️ 이름 표시</span>
                     </label>
                 </div>
-                <label class="flex items-center gap-1.5 cursor-pointer font-bold text-emerald-700">
-                    <input type="checkbox" id="teacherMode" onchange="onTeacherModeChange()" class="rounded text-emerald-600">
-                    <span>교사용 정답지 미리보기</span>
+            </div>
+
+            <!-- 교사용 정답 미리보기(연산값) & 퍼즐 미리보기(퍼즐 이미지) 2가지 분리 옵션 -->
+            <div class="grid grid-cols-2 gap-1.5 mb-2">
+                <label class="flex items-center justify-center gap-1.5 border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-50 rounded-lg px-2 py-1.5 text-xs font-bold text-emerald-800 cursor-pointer transition" title="빨간 네모 칸 안에 연산 정답 숫자를 표시합니다">
+                    <input type="checkbox" id="teacherAnswerMode" onchange="onTeacherAnswerModeChange()" class="rounded text-emerald-600">
+                    <span>✅ 교사용 정답 미리보기</span>
+                </label>
+                <label class="flex items-center justify-center gap-1.5 border border-amber-200 bg-amber-50/70 hover:bg-amber-50 rounded-lg px-2 py-1.5 text-xs font-bold text-amber-900 cursor-pointer transition" title="연산을 잘 모르는 학생도 그림 모양으로 유추할 수 있도록 문제판에 퍼즐 이미지를 표시합니다">
+                    <input type="checkbox" id="puzzleImagePreviewMode" onchange="renderWorksheet()" class="rounded text-amber-600">
+                    <span>🧩 퍼즐 미리보기</span>
                 </label>
             </div>
 
+            <!-- 교사용 정답 미리보기 선택 시 활성화되는 점선 따라쓰기 옵션 -->
+            <div id="dottedTraceOptionBox" class="hidden mb-2.5 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                <label class="flex items-center gap-2 text-xs font-bold text-emerald-900 cursor-pointer">
+                    <input type="checkbox" id="dottedTraceMode" onchange="renderWorksheet()" class="rounded text-emerald-600 w-3.5 h-3.5">
+                    <span>✏️ 정답 가이드 표시 (점선 따라쓰기용 학습지)</span>
+                </label>
+                <p class="text-[11px] text-emerald-700 mt-1 leading-snug">
+                    체크 시 빨간 네모 안에 정자체 점선 획으로 된 정답 숫자를 표시합니다.
+                </p>
+            </div>
+
             <!-- 날짜 / 이름 덮어쓰기 입력 및 폰트 크기 설정 박스 -->
-            <div id="studentInfoDetailBox" class="mt-2.5 bg-gray-50 border border-gray-200 rounded-lg p-2.5 space-y-2.5">
+            <div id="studentInfoDetailBox" class="mt-2 bg-gray-50 border border-gray-200 rounded-lg p-2.5 space-y-2.5">
                 <div class="grid grid-cols-2 gap-2">
                     <div id="dateInputCol">
                         <label class="block text-[11px] font-bold text-gray-700 mb-1">📅 날짜 (숫자만 덮어쓰기)</label>
@@ -537,26 +569,15 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 교사용 정답지 선택 시 활성화되는 점선 따라쓰기 옵션 -->
-            <div id="dottedTraceOptionBox" class="hidden mt-2.5 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
-                <label class="flex items-center gap-2 text-xs font-bold text-emerald-900 cursor-pointer">
-                    <input type="checkbox" id="dottedTraceMode" onchange="renderWorksheet()" class="rounded text-emerald-600 w-3.5 h-3.5">
-                    <span>✏️ 정답 가이드 표시 (점선 따라쓰기용 학습지)</span>
-                </label>
-                <p class="text-[11px] text-emerald-700 mt-1 leading-snug">
-                    체크 시 배경 그림은 숨기고 빨간 네모 안에 정자체 점선 획으로 된 정답 숫자를 표시합니다.
-                </p>
-            </div>
         </section>
 
-        <!-- 2. 그리드 크기 및 인쇄 레이아웃 (최대 10×10 확장) -->
+        <!-- 2. 그리드 크기 및 인쇄 레이아웃 (최대 10×10 확장, 기본 2페이지 분리 인쇄) -->
         <section class="mb-5 border-t pt-4">
             <h2 class="text-sm font-bold text-gray-700 mb-2">2. 퍼즐 그리드 크기 (가로 열 × 세로 행, 최대 10×10)</h2>
             <div class="grid grid-cols-6 gap-1 mb-2.5">
                 <button onclick="setGrid(3, 3)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="3x3">3×3</button>
                 <button onclick="setGrid(4, 4)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 border-indigo-500 text-indigo-700" data-grid="4x4">4×4</button>
-                <button onclick="setGrid(3, 5)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="3x5">3×5<span class="block text-[9px] text-indigo-600 font-normal">2단추천</span></button>
+                <button onclick="setGrid(3, 5)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="3x5">3×5</button>
                 <button onclick="setGrid(5, 5)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="5x5">5×5</button>
                 <button onclick="setGrid(8, 8)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="8x8">8×8</button>
                 <button onclick="setGrid(10, 10)" class="preset-btn border border-gray-300 hover:bg-indigo-50 py-1.5 rounded-lg text-xs font-bold" data-grid="10x10">10×10</button>
@@ -569,11 +590,11 @@
                 <span class="text-gray-500 font-bold">행(세로)</span>
             </div>
 
-            <label class="block text-xs font-bold text-gray-700 mb-1">A4 인쇄 배치 방식 (자동 추천 적용됨)</label>
+            <label class="block text-xs font-bold text-gray-700 mb-1">A4 인쇄 배치 방식 (기본값: 2페이지 분리 인쇄)</label>
             <select id="layoutMode" onchange="renderWorksheet()" class="w-full border border-gray-300 rounded-lg px-2.5 py-2 text-xs font-bold bg-gray-50">
-                <option value="1page-vertical">1페이지 상하 2단 분할 (세로 A4 - 정사각/가로형 추천)</option>
-                <option value="1page-horizontal">1페이지 좌우 2단 분할 (가로 A4 - 3×5 등 세로형 추천)</option>
-                <option value="2page-split">2페이지 분리 인쇄 (세로 A4 - 5×5 ~ 10×10 대형 추천)</option>
+                <option value="2page-split" selected>2페이지 분리 인쇄 (세로 A4 - 기본값)</option>
+                <option value="1page-vertical">1페이지 상하 2단 분할 (세로 A4)</option>
+                <option value="1page-horizontal">1페이지 좌우 2단 분할 (가로 A4)</option>
             </select>
         </section>
 
@@ -611,6 +632,20 @@
                         </div>
                     </div>
 
+                    <!-- 1:1 숫자/구체물 크기 확대/축소 조절 (구체물 카테고리 바로 위 배치, 최대 400%) -->
+                    <div class="border-t border-indigo-200 pt-2">
+                        <div class="flex items-center justify-between text-xs font-bold text-indigo-950 mb-1.5">
+                            <span id="matchScaleTitle">🔍 숫자 폰트 크기 조절 (최대 400%)</span>
+                            <span id="matchFontScaleLabel" class="bg-indigo-600 text-white text-[11px] px-2 py-0.5 rounded-full">100%</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" onclick="adjustMatchFontScale(-10)" class="w-7 h-7 bg-white border border-indigo-300 hover:bg-indigo-100 rounded-lg font-black text-indigo-800 flex items-center justify-center shadow-sm" title="크기 축소">-</button>
+                            <input type="range" id="matchFontScale" min="60" max="400" step="10" value="100" oninput="onMatchFontScaleChange(this.value)" class="flex-1 accent-indigo-600 cursor-pointer">
+                            <button type="button" onclick="adjustMatchFontScale(10)" class="w-7 h-7 bg-white border border-indigo-300 hover:bg-indigo-100 rounded-lg font-black text-indigo-800 flex items-center justify-center shadow-sm" title="크기 확대">+</button>
+                            <button type="button" onclick="onMatchFontScaleChange(100)" class="text-[11px] bg-white border border-indigo-200 hover:bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold">초기화</button>
+                        </div>
+                    </div>
+
                     <!-- 숫자 그대로 표시일 때: 덮어쓰기 및 점선 옵션 -->
                     <div id="matchNumberOnlyOptions" class="border-t border-indigo-200 pt-2 space-y-2">
                         <label class="flex items-center gap-2 text-xs font-bold text-indigo-900 cursor-pointer">
@@ -628,8 +663,31 @@
                         </p>
                     </div>
 
-                    <!-- 구체물 개수 세기일 때: 이모지 카테고리 및 직접 선택 피커 -->
+                    <!-- 구체물 개수 세기일 때: 이모지 카테고리, 직접 선택 피커 및 내 구체물 이미지 업로드 -->
                     <div id="matchConcreteOptions" class="hidden border-t border-indigo-200 pt-2 space-y-2">
+                        <!-- 직접 구체물 이미지 업로드 박스 -->
+                        <div class="bg-white border border-indigo-200 rounded-lg p-2.5">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="text-xs font-bold text-indigo-950">🖼️ 직접 구체물 이미지 업로드</span>
+                                <label class="text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2.5 py-1 rounded-md cursor-pointer shadow-xs transition">
+                                    📁 이미지 선택
+                                    <input type="file" id="customConcreteImageInput" accept="image/*" onchange="handleCustomConcreteImageUpload(event)" class="hidden">
+                                </label>
+                            </div>
+                            <div id="customConcretePreviewBox" class="hidden mt-1.5 flex items-center justify-between bg-indigo-50/70 border border-indigo-200 rounded-md px-2.5 py-1.5">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <img id="customConcretePreviewImg" src="" alt="업로드된 구체물" class="w-8 h-8 object-contain bg-white border border-indigo-200 rounded p-0.5 shrink-0">
+                                    <span id="customConcreteFileName" class="text-[11px] font-bold text-indigo-900 truncate">내 구체물 이미지 적용 중</span>
+                                </div>
+                                <button type="button" onclick="clearCustomConcreteImage()" class="text-[11px] bg-white border border-rose-200 hover:bg-rose-50 text-rose-600 font-bold px-2 py-0.5 rounded ml-2 shrink-0">
+                                    ✕ 해제
+                                </button>
+                            </div>
+                            <p id="customConcreteHintText" class="text-[11px] text-gray-500 leading-snug">
+                                학생이 좋아하는 사물·캐릭터 사진을 올리면 모든 칸에 동일 크기로 배치됩니다.
+                            </p>
+                        </div>
+
                         <div>
                             <div class="flex items-center justify-between mb-1.5">
                                 <span class="text-xs font-bold text-indigo-950">🧸 구체물(이모지) 카테고리</span>
@@ -675,22 +733,8 @@
                                 <span>🎲 카테고리 내 이모지 랜덤으로 섞기</span>
                             </label>
                             <p class="text-[11px] text-indigo-700 mt-1 leading-snug">
-                                기본값(해제)은 위에서 직접 고른 이모지가 모든 칸에 동일하게 표시되며, 체크 시 카테고리 내 이모지가 무작위로 섞입니다.
+                                설정된 범위 내 가장 큰 숫자를 기준으로 모든 칸의 구체물 크기가 동일하게 통일됩니다.
                             </p>
-                        </div>
-                    </div>
-
-                    <!-- 1:1 숫자/구체물 크기 확대/축소 조절 (최대 400%) -->
-                    <div class="border-t border-indigo-200 pt-2">
-                        <div class="flex items-center justify-between text-xs font-bold text-indigo-950 mb-1.5">
-                            <span id="matchScaleTitle">🔍 숫자 폰트 크기 조절 (최대 400%)</span>
-                            <span id="matchFontScaleLabel" class="bg-indigo-600 text-white text-[11px] px-2 py-0.5 rounded-full">100%</span>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <button type="button" onclick="adjustMatchFontScale(-10)" class="w-7 h-7 bg-white border border-indigo-300 hover:bg-indigo-100 rounded-lg font-black text-indigo-800 flex items-center justify-center shadow-sm" title="크기 축소">-</button>
-                            <input type="range" id="matchFontScale" min="60" max="400" step="10" value="100" oninput="onMatchFontScaleChange(this.value)" class="flex-1 accent-indigo-600 cursor-pointer">
-                            <button type="button" onclick="adjustMatchFontScale(10)" class="w-7 h-7 bg-white border border-indigo-300 hover:bg-indigo-100 rounded-lg font-black text-indigo-800 flex items-center justify-center shadow-sm" title="크기 확대">+</button>
-                            <button type="button" onclick="onMatchFontScaleChange(100)" class="text-[11px] bg-white border border-indigo-200 hover:bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold">초기화</button>
                         </div>
                     </div>
                 </div>
@@ -897,12 +941,13 @@
     </main>
 
     <script>
+        // 1개 이모지에 여러 개가 들어 있어 개수 세기 혼란을 주는 체리(🍒), 포도(🍇), 블루베리(🫐), 핫도그(🌭) 제거 및 단일 개체로 교체
         const EMOJI_CATEGORIES = {
             fruit: [
-                '🍎', '🍏', '🍌', '🍇', '🍓',
-                '🍉', '🍊', '🍑', '🍍', '🥝',
-                '🍒', '🫐', '🍋', '🍈', '🥭',
-                '🍐', '🥥', '🥑', '🍅', '🥕'
+                '🍎', '🍏', '🍌', '🍊', '🍓',
+                '🍉', '🍋', '🍑', '🍍', '🥝',
+                '🍐', '🥭', '🍈', '🥥', '🥑',
+                '🍅', '🥕', '🌽', '🍆', '🥔'
             ],
             animal: [
                 '🐶', '🐱', '🐰', '🐻', '🐼',
@@ -918,9 +963,9 @@
             ],
             food: [
                 '🍕', '🍔', '🍟', '🍙', '🍳',
-                '🥟', '🍣', '🍞', '🌭', '🌮',
-                '🥪', '🍜', '🍛', '🍚', '🍱',
-                '🥩', '🍗', '🌽', '🥦', '🧀'
+                '🥟', '🍣', '🍞', '🥪', '🌮',
+                '🍜', '🍛', '🍚', '🍱', '🍠',
+                '🥩', '🍗', '🥦', '🧀', '🥟'
             ],
             transport: [
                 '🚗', '🚓', '🚒', '🚌', '🚆',
@@ -932,7 +977,7 @@
                 '🔴', '🟦', '🔶', '⭐', '❤️',
                 '🟢', '🟣', '🟡', '🔺', '🔷',
                 '🟨', '🟩', '🟪', '💙', '💛',
-                '💚', '💜', '⚪', '⚫', '✨'
+                '💚', '💜', '🟠', '⚫', '🟤'
             ]
         };
 
@@ -1001,6 +1046,7 @@
             matchDisplayType: 'number', // 'number' | 'concrete'
             emojiCategory: 'fruit',
             selectedEmoji: '🍎',
+            customConcreteImageUrl: null, // 교사가 직접 업로드한 구체물 이미지 DataURL
             selectedSampleId: 'rocket',
             teacherMascotGender: 'male',
             customMascotDataUrl: null
@@ -1013,6 +1059,45 @@
             useBuiltInSample('rocket');
             regenerateProblems();
         };
+
+        // =========================================================================
+        // 직접 구체물 이미지 업로드 및 해제 핸들러
+        // =========================================================================
+        function handleCustomConcreteImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                state.customConcreteImageUrl = e.target.result;
+
+                const previewBox = document.getElementById('customConcretePreviewBox');
+                const previewImg = document.getElementById('customConcretePreviewImg');
+                const fileNameEl = document.getElementById('customConcreteFileName');
+                const hintText = document.getElementById('customConcreteHintText');
+
+                previewImg.src = e.target.result;
+                fileNameEl.innerText = file.name || '내 구체물 이미지 적용 중';
+                previewBox.classList.remove('hidden');
+                hintText.classList.add('hidden');
+
+                renderEmojiPicker();
+                renderWorksheet();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearCustomConcreteImage() {
+            state.customConcreteImageUrl = null;
+            const input = document.getElementById('customConcreteImageInput');
+            if (input) input.value = '';
+
+            document.getElementById('customConcretePreviewBox').classList.add('hidden');
+            document.getElementById('customConcreteHintText').classList.remove('hidden');
+
+            renderEmojiPicker();
+            renderWorksheet();
+        }
 
         // =========================================================================
         // 오프라인 환경에서도 정상 표시되도록 고해상도 PNG 내장 폴백 생성
@@ -1041,7 +1126,6 @@
             }
 
             if (gender === 'female') {
-                // --- 여자 선생님 폴백 ---
                 ctx.save();
                 ctx.translate(105, 112);
                 ctx.beginPath(); ctx.arc(0, 0, 44, 0, Math.PI * 2); strokeAndFill('#5597ea', 6);
@@ -1253,7 +1337,6 @@
                 ctx.restore();
 
             } else {
-                // --- 남자 선생님 폴백 ---
                 ctx.save();
                 ctx.translate(108, 115);
                 ctx.beginPath(); ctx.arc(0, 0, 42, 0, Math.PI * 2); strokeAndFill('#4ade80', 6);
@@ -1454,7 +1537,6 @@
             EMBEDDED_TEACHER_DATA_URLS.female = buildEmbeddedTeacherPortraitDataUrl('female');
         }
 
-        // Imgur 직접 링크 우선 로드 -> 로컬 파일 -> 오프라인 내장 이미지 순차 폴백
         function handleMascotImgError(imgEl, gender, attemptIdx) {
             if (!imgEl) return;
             const candidates = GENERATED_MASCOT_CANDIDATES[gender] || [];
@@ -2113,7 +2195,10 @@
                 state.selectedEmoji = list[0];
             }
 
-            if (isRandom) {
+            if (state.customConcreteImageUrl) {
+                badge.innerText = '🖼️ 내 이미지 사용 중';
+                badge.className = 'text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full';
+            } else if (isRandom) {
                 badge.innerText = '🎲 랜덤 섞기 중';
                 badge.className = 'text-[11px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full';
             } else {
@@ -2122,7 +2207,7 @@
             }
 
             grid.innerHTML = list.map(emoji => {
-                const isSelected = !isRandom && state.selectedEmoji === emoji;
+                const isSelected = !state.customConcreteImageUrl && !isRandom && state.selectedEmoji === emoji;
                 const btnClass = isSelected
                     ? 'border-2 border-indigo-600 bg-indigo-50 shadow-xs scale-105'
                     : 'border border-gray-200 bg-gray-50/70 hover:bg-indigo-50/60 hover:border-indigo-300';
@@ -2138,6 +2223,9 @@
 
         function selectSpecificEmoji(emoji) {
             state.selectedEmoji = emoji;
+            if (state.customConcreteImageUrl) {
+                clearCustomConcreteImage();
+            }
             const randomCheck = document.getElementById('randomizeEmoji');
             if (randomCheck.checked) {
                 randomCheck.checked = false;
@@ -2150,6 +2238,9 @@
         }
 
         function onRandomizeEmojiChange() {
+            if (state.customConcreteImageUrl && document.getElementById('randomizeEmoji').checked) {
+                clearCustomConcreteImage();
+            }
             renderEmojiPicker();
             const isRandom = document.getElementById('randomizeEmoji').checked;
             const list = EMOJI_CATEGORIES[state.emojiCategory] || EMOJI_CATEGORIES.fruit;
@@ -2203,6 +2294,10 @@
             const list = EMOJI_CATEGORIES[cat] || EMOJI_CATEGORIES.fruit;
             state.selectedEmoji = list[0];
 
+            if (state.customConcreteImageUrl) {
+                clearCustomConcreteImage();
+            }
+
             document.querySelectorAll('.emoji-cat-btn').forEach(btn => {
                 if (btn.dataset.cat === cat) {
                     btn.className = 'emoji-cat-btn border-2 border-indigo-600 bg-white text-indigo-800 shadow-sm py-1.5 rounded-lg text-xs font-bold transition';
@@ -2234,10 +2329,10 @@
             renderWorksheet();
         }
 
-        function onTeacherModeChange() {
-            const teacherMode = document.getElementById('teacherMode').checked;
+        function onTeacherAnswerModeChange() {
+            const teacherAnswerMode = document.getElementById('teacherAnswerMode').checked;
             const optionBox = document.getElementById('dottedTraceOptionBox');
-            if (teacherMode) {
+            if (teacherAnswerMode) {
                 optionBox.classList.remove('hidden');
             } else {
                 optionBox.classList.add('hidden');
@@ -2320,16 +2415,6 @@
             document.getElementById('guideGridText').innerText = `${cols}×${rows}`;
             document.getElementById('guideRatioText').innerText = `${cols/divisor}:${rows/divisor} (${cols === rows ? '정사각형' : (cols < rows ? '세로형' : '가로형')})`;
 
-            const layoutSelect = document.getElementById('layoutMode');
-            const total = cols * rows;
-            if (total >= 25) {
-                layoutSelect.value = '2page-split';
-            } else if (rows > cols) {
-                layoutSelect.value = '1page-horizontal';
-            } else {
-                layoutSelect.value = '1page-vertical';
-            }
-
             regenerateProblems();
         }
 
@@ -2395,10 +2480,12 @@
 
             const availableRangeCount = max - min + 1;
             const isMatchMode = ops.length === 1 && ops[0] === 'match';
+            const isConcreteCountMode = isMatchMode && state.matchDisplayType === 'concrete';
 
             const problems = [];
             const usedAnswers = new Set();
             let forcedDuplicateOccurred = false;
+            let anyDuplicateDetected = false;
 
             let numberPool = [];
             if (!allowDuplicates && isMatchMode) {
@@ -2438,6 +2525,9 @@
                             forcedDuplicateOccurred = true;
                         }
                     }
+                    if (usedAnswers.has(answer)) {
+                        anyDuplicateDetected = true;
+                    }
                     expr = `${answer}`;
                     usedAnswers.add(answer);
                 } else {
@@ -2469,6 +2559,9 @@
                         }
 
                         if (allowDuplicates || !usedAnswers.has(answer)) {
+                            if (usedAnswers.has(answer)) {
+                                anyDuplicateDetected = true;
+                            }
                             usedAnswers.add(answer);
                             break;
                         }
@@ -2477,6 +2570,8 @@
 
                     if (!allowDuplicates && attempts >= 150) {
                         forcedDuplicateOccurred = true;
+                        anyDuplicateDetected = true;
+                        usedAnswers.add(answer);
                     }
                 }
 
@@ -2491,7 +2586,9 @@
 
             const warnEl = document.getElementById('duplicateWarning');
             const isMatchRangeOverflow = isMatchMode && totalCells > availableRangeCount;
-            if ((!allowDuplicates && forcedDuplicateOccurred) || isMatchRangeOverflow) {
+            const hasConcreteDuplicate = isConcreteCountMode && (anyDuplicateDetected || isMatchRangeOverflow);
+
+            if ((!allowDuplicates && forcedDuplicateOccurred) || isMatchRangeOverflow || hasConcreteDuplicate) {
                 warnEl.classList.remove('hidden');
                 warnEl.innerHTML = `참고 : 현재 퍼즐에 중복 숫자가 발생하였습니다.`;
             } else {
@@ -2512,7 +2609,7 @@
 
             renderWorksheet();
 
-            if (isMatchRangeOverflow) {
+            if (isMatchRangeOverflow || hasConcreteDuplicate) {
                 openDuplicateModal();
             }
         }
@@ -3451,38 +3548,61 @@
             img.src = srcUrl;
         }
 
-        function buildConcreteEmojisHtml(count, emoji, cellW, cellH, scale) {
+        // 설정된 범위 내 가장 큰 숫자를 기준으로 모든 격자에서 사용할 통일된 구체물 크기 계산
+        function calcUniformConcreteEmojiMetrics(maxCountInRange, cellW, cellH, scale) {
+            const refCount = Math.max(1, maxCountInRange);
+
+            let maxColsPerRow = 1;
+            if (refCount === 1) maxColsPerRow = 1;
+            else if (refCount <= 4) maxColsPerRow = 2;
+            else if (refCount <= 9) maxColsPerRow = 3;
+            else if (refCount <= 16) maxColsPerRow = 4;
+            else maxColsPerRow = 5;
+
+            const maxRowsNeeded = Math.ceil(refCount / maxColsPerRow);
+
+            const usableW = Math.max(16, cellW - 8);
+            const usableH = Math.max(16, cellH - 8);
+            const maxByW = (usableW / maxColsPerRow) * 0.78;
+            const maxByH = (usableH / maxRowsNeeded) * 0.78;
+            const baseSize = Math.min(maxByW, maxByH, 46);
+            const uniformSize = Math.max(8, Math.round(baseSize * scale));
+            const uniformGap = Math.max(1, Math.round(uniformSize * 0.12));
+
+            return {
+                uniformSize,
+                uniformGap,
+                maxColsPerRow
+            };
+        }
+
+        function buildConcreteEmojisHtml(count, emoji, uniformMetrics) {
             if (count <= 0) {
                 return `<span class="text-xs font-bold text-gray-400">(없음: 0)</span>`;
             }
 
-            let colsPerRow = 1;
-            if (count === 1) colsPerRow = 1;
-            else if (count <= 4) colsPerRow = 2;
-            else if (count <= 9) colsPerRow = 3;
-            else if (count <= 16) colsPerRow = 4;
-            else colsPerRow = 5;
-
-            const rowsNeeded = Math.ceil(count / colsPerRow);
-
-            const usableW = Math.max(16, cellW - 8);
-            const usableH = Math.max(16, cellH - 8);
-            const maxByW = (usableW / colsPerRow) * 0.78;
-            const maxByH = (usableH / rowsNeeded) * 0.78;
-            const baseSize = Math.min(maxByW, maxByH, 46);
-            const finalSize = Math.max(8, Math.round(baseSize * scale));
-            const gapPx = Math.max(1, Math.round(finalSize * 0.12));
+            const { uniformSize, uniformGap, maxColsPerRow } = uniformMetrics;
+            const colsPerRow = Math.min(count, maxColsPerRow);
+            const customImgUrl = state.customConcreteImageUrl;
 
             let itemsHtml = '';
             for (let k = 0; k < count; k++) {
-                itemsHtml += `<span style="font-size: ${finalSize}px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;">${emoji}</span>`;
+                if (customImgUrl) {
+                    itemsHtml += `
+                        <span style="width: ${uniformSize}px; height: ${uniformSize}px; display: inline-flex; align-items: center; justify-content: center;">
+                            <img src="${customImgUrl}" class="concrete-custom-item-img" style="width: ${uniformSize}px; height: ${uniformSize}px;" alt="구체물">
+                        </span>
+                    `;
+                } else {
+                    itemsHtml += `<span style="font-size: ${uniformSize}px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;">${emoji}</span>`;
+                }
             }
 
             return `
                 <div class="concrete-emoji-grid" style="
                     display: grid;
                     grid-template-columns: repeat(${colsPerRow}, auto);
-                    gap: ${gapPx}px;
+                    gap: ${uniformGap}px;
                     justify-content: center;
                     align-content: center;
                 ">
@@ -3521,7 +3641,8 @@
             const showTeacherMascot = document.getElementById('showTeacherMascot').checked;
             const mascotScale = (parseInt(document.getElementById('mascotScale').value) || 100) / 100;
 
-            const teacherMode = document.getElementById('teacherMode').checked;
+            const teacherAnswerMode = document.getElementById('teacherAnswerMode').checked;
+            const puzzleImagePreviewMode = document.getElementById('puzzleImagePreviewMode').checked;
             const dottedTraceMode = document.getElementById('dottedTraceMode').checked;
             const matchTraceMode = document.getElementById('matchTraceMode').checked;
             const dottedMatchTraceMode = document.getElementById('dottedMatchTraceMode').checked;
@@ -3530,6 +3651,14 @@
             const arithFontScale = (parseInt(document.getElementById('arithFontScale').value) || 100) / 100;
             const badgeFontScale = (parseInt(document.getElementById('badgeFontScale').value) || 100) / 100;
             const layoutMode = document.getElementById('layoutMode').value;
+
+            let rangeMin = parseInt(document.getElementById('minNum').value);
+            if (isNaN(rangeMin)) rangeMin = 1;
+            let rangeMax = parseInt(document.getElementById('maxNum').value);
+            if (isNaN(rangeMax)) rangeMax = 20;
+            const configuredMaxNum = Math.max(rangeMin, rangeMax);
+            const highestProblemAnswer = state.problems.reduce((acc, p) => Math.max(acc, p.answer || 0), 1);
+            const uniformConcreteRefCount = Math.max(1, configuredMaxNum, highestProblemAnswer);
 
             const printStyleEl = document.getElementById('dynamic-print-style');
             if (layoutMode === '1page-horizontal') {
@@ -3695,16 +3824,24 @@
                 };
 
                 const buildHeader = () => {
-                    let modeBadgeHtml = '';
+                    let modeBadges = [];
                     if (isConcreteMode) {
-                        modeBadgeHtml = '<span class="text-xs bg-indigo-600 text-white px-2.5 py-1 rounded-full font-bold leading-none">구체물 세기</span>';
+                        modeBadges.push('<span class="text-xs bg-indigo-600 text-white px-2.5 py-1 rounded-full font-bold leading-none">구체물 세기</span>');
                     } else if (isAllMatchMode && matchTraceMode) {
-                        modeBadgeHtml = `<span class="text-xs bg-indigo-600 text-white px-2.5 py-1 rounded-full font-bold leading-none">${dottedMatchTraceMode ? '점선 따라쓰기' : '숫자 따라쓰기'}</span>`;
-                    } else if (teacherMode) {
-                        modeBadgeHtml = dottedTraceMode
-                            ? '<span class="text-xs bg-amber-500 text-white px-2.5 py-1 rounded-full font-bold leading-none">따라쓰기용</span>'
-                            : '<span class="text-xs bg-emerald-600 text-white px-2.5 py-1 rounded-full font-bold leading-none">교사용 정답지</span>';
+                        modeBadges.push(`<span class="text-xs bg-indigo-600 text-white px-2.5 py-1 rounded-full font-bold leading-none">${dottedMatchTraceMode ? '점선 따라쓰기' : '숫자 따라쓰기'}</span>`);
                     }
+
+                    if (teacherAnswerMode) {
+                        modeBadges.push(dottedTraceMode
+                            ? '<span class="text-xs bg-amber-500 text-white px-2.5 py-1 rounded-full font-bold leading-none">정답 따라쓰기</span>'
+                            : '<span class="text-xs bg-emerald-600 text-white px-2.5 py-1 rounded-full font-bold leading-none">교사용 정답</span>');
+                    }
+
+                    if (puzzleImagePreviewMode) {
+                        modeBadges.push('<span class="text-xs bg-amber-600 text-white px-2.5 py-1 rounded-full font-bold leading-none">🧩 그림 힌트</span>');
+                    }
+
+                    const modeBadgeHtml = modeBadges.join('');
 
                     const gridBadgeText = `${state.cols}×${state.rows} 퍼즐`;
                     const colorfulTitleHtml = buildColorfulTitleHtml(rawTitle);
@@ -3731,7 +3868,7 @@
                                </div>
                            </div>`
                         : (modeBadgeHtml
-                            ? `<div class="flex items-center gap-2">${modeBadgeHtml}</div>`
+                            ? `<div class="flex items-center flex-wrap gap-2">${modeBadgeHtml}</div>`
                             : `<div></div>`);
 
                     const rightInfoHtml = buildStudentInfoHtml();
@@ -3749,22 +3886,37 @@
                 const buildProblemGrid = (widthPx, heightPx) => {
                     const cellW = widthPx / state.cols;
                     const cellH = heightPx / state.rows;
+                    // 설정된 범위 내 가장 큰 숫자를 기준으로 모든 칸에서 동일한 크기를 사용
+                    const uniformConcreteMetrics = calcUniformConcreteEmojiMetrics(
+                        uniformConcreteRefCount,
+                        cellW,
+                        cellH,
+                        matchFontScale
+                    );
+
                     let cellsHtml = '';
 
                     state.problems.forEach((p, idx) => {
                         const r = Math.floor(idx / state.cols);
                         const c = idx % state.cols;
 
+                        const bgPieceHtml = puzzleImagePreviewMode ? buildPieceImgTag(r, c) : '';
+                        const hintTextClass = puzzleImagePreviewMode ? 'puzzle-hint-stroke' : '';
+
                         if (p.isMatchOnly) {
                             if (state.matchDisplayType === 'concrete') {
-                                const emojisContent = buildConcreteEmojisHtml(p.answer, p.emoji, cellW, cellH, matchFontScale);
-                                if (teacherMode) {
+                                const emojisContent = buildConcreteEmojisHtml(p.answer, p.emoji, uniformConcreteMetrics);
+                                const answerCornerBadge = teacherAnswerMode
+                                    ? `<span class="absolute bottom-1 right-1 bg-white/95 border border-black rounded px-1.5 text-xs font-black text-red-600 z-10">${p.answer}개</span>`
+                                    : '';
+
+                                if (puzzleImagePreviewMode) {
                                     cellsHtml += `
                                         <div class="problem-cell problem-cell-match">
-                                            ${buildPieceImgTag(r, c)}
-                                            <div class="teacher-overlay justify-center">
+                                            ${bgPieceHtml}
+                                            <div class="puzzle-preview-overlay justify-center">
                                                 ${emojisContent}
-                                                <span class="absolute bottom-1 right-1 bg-white/95 border border-black rounded px-1.5 text-xs font-black text-red-600">${p.answer}개</span>
+                                                ${answerCornerBadge}
                                             </div>
                                         </div>
                                     `;
@@ -3772,20 +3924,26 @@
                                     cellsHtml += `
                                         <div class="problem-cell problem-cell-match">
                                             ${emojisContent}
+                                            ${answerCornerBadge}
                                         </div>
                                     `;
                                 }
                             } else {
                                 const numDisplayHtml = matchTraceMode
                                     ? renderTraceableTextHtml(p.expr, singleNumPx, dottedMatchTraceMode, 'dotted-trace-text-large')
-                                    : `<span class="single-num-plain">${escapeHtml(p.expr)}</span>`;
+                                    : `<span class="single-num-plain ${hintTextClass}">${escapeHtml(p.expr)}</span>`;
 
-                                if (teacherMode && !dottedTraceMode && !matchTraceMode) {
+                                const answerCornerBadge = (teacherAnswerMode && !matchTraceMode)
+                                    ? `<span class="absolute bottom-1 right-1 bg-white/95 border border-red-500 rounded px-1.5 text-xs font-black text-red-600 z-10">${p.answer}</span>`
+                                    : '';
+
+                                if (puzzleImagePreviewMode) {
                                     cellsHtml += `
                                         <div class="problem-cell problem-cell-match">
-                                            ${buildPieceImgTag(r, c)}
-                                            <div class="teacher-overlay justify-center" style="font-size: ${singleNumFontSize};">
+                                            ${bgPieceHtml}
+                                            <div class="puzzle-preview-overlay justify-center" style="font-size: ${singleNumFontSize};">
                                                 ${numDisplayHtml}
+                                                ${answerCornerBadge}
                                             </div>
                                         </div>
                                     `;
@@ -3793,48 +3951,53 @@
                                     cellsHtml += `
                                         <div class="problem-cell problem-cell-match" style="font-size: ${singleNumFontSize};">
                                             ${numDisplayHtml}
+                                            ${answerCornerBadge}
                                         </div>
                                     `;
                                 }
                             }
                         } else {
-                            if (teacherMode) {
+                            // 사칙연산 모드:
+                            // 1) 빨간 네모 칸 내부 내용 (teacherAnswerMode 여부에 따라 연산값 또는 빈칸)
+                            let answerBoxHtml = `<div class="red-answer-box" style="width: ${boxWidth}; height: ${boxHeight};"></div>`;
+                            if (teacherAnswerMode) {
                                 if (dottedTraceMode) {
                                     const dottedAnswerHtml = renderTraceableTextHtml(String(p.answer), boxAnswerFontPx, true, 'dotted-trace-text');
-                                    cellsHtml += `
-                                        <div class="problem-cell" style="padding: ${cellPadding};">
-                                            <div class="problem-expr-area" style="font-size: ${exprFontSize};">${p.expr}</div>
-                                            <div class="answer-write-row">
-                                                <span style="font-size: ${eqFontSize};">=</span>
-                                                <div class="red-answer-box" style="width: ${boxWidth}; height: ${boxHeight}; font-size: ${boxAnswerFontSize};">
-                                                    ${dottedAnswerHtml}
-                                                </div>
-                                            </div>
+                                    answerBoxHtml = `
+                                        <div class="red-answer-box" style="width: ${boxWidth}; height: ${boxHeight}; font-size: ${boxAnswerFontSize};">
+                                            ${dottedAnswerHtml}
                                         </div>
                                     `;
                                 } else {
-                                    cellsHtml += `
-                                        <div class="problem-cell" style="padding: ${cellPadding};">
-                                            ${buildPieceImgTag(r, c)}
-                                            <div class="teacher-overlay" style="padding: ${cellPadding};">
-                                                <div class="problem-expr-area" style="font-size: ${exprFontSize};">${p.expr}</div>
-                                                <div class="answer-write-row">
-                                                    <span style="font-size: ${eqFontSize};">=</span>
-                                                    <div class="red-answer-box text-red-600 font-black" style="width: ${boxWidth}; height: ${boxHeight}; font-size: ${boxAnswerFontSize};">
-                                                        ${p.answer}
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    answerBoxHtml = `
+                                        <div class="red-answer-box text-red-600 font-black" style="width: ${boxWidth}; height: ${boxHeight}; font-size: ${boxAnswerFontSize};">
+                                            ${p.answer}
                                         </div>
                                     `;
                                 }
+                            }
+
+                            // 2) 퍼즐 미리보기(퍼즐 이미지) 여부에 따라 배경 이미지 배치
+                            if (puzzleImagePreviewMode) {
+                                cellsHtml += `
+                                    <div class="problem-cell" style="padding: ${cellPadding};">
+                                        ${bgPieceHtml}
+                                        <div class="puzzle-preview-overlay" style="padding: ${cellPadding};">
+                                            <div class="problem-expr-area ${hintTextClass}" style="font-size: ${exprFontSize};">${p.expr}</div>
+                                            <div class="answer-write-row">
+                                                <span class="${hintTextClass}" style="font-size: ${eqFontSize};">=</span>
+                                                ${answerBoxHtml}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
                             } else {
                                 cellsHtml += `
                                     <div class="problem-cell" style="padding: ${cellPadding};">
                                         <div class="problem-expr-area" style="font-size: ${exprFontSize};">${p.expr}</div>
                                         <div class="answer-write-row">
                                             <span style="font-size: ${eqFontSize};">=</span>
-                                            <div class="red-answer-box" style="width: ${boxWidth}; height: ${boxHeight};"></div>
+                                            ${answerBoxHtml}
                                         </div>
                                     </div>
                                 `;
